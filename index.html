@@ -9,6 +9,7 @@
     <title>Bridge</title>
 
     <!-- Bootstrap css -->
+    <link rel="stylesheet" href="bridge.css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
     <!-- Bootstrap theme -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
@@ -20,6 +21,8 @@
     <!-- Bootstrap js -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.1/js/bootstrap-datepicker.min.js"></script>
+
+    <script src="bridge.js"></script>
 
   </head>
   <body>
@@ -47,6 +50,7 @@
                   <input type="text" class="form-control" id="inputTitle" placeholder="Title">
                 </div>
               </div>
+
               <div class="form-group row">
                 <label for="inputDate3" class="col-sm-2 form-control-label">Date</label>
                 <div class="col-sm-10">
@@ -60,8 +64,52 @@
                   </div>
                 </div>
               </div>
+
+              <div class="form-group row">
+                <label for="inputMovement" class="col-sm-2 form-control-label">Movement</label>
+                <div class="col-sm-10">
+                  <div class="dropdown">
+                    <button class="btn btn-default dropdown-toggle" type="button" id="inputMovement" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                      Movement
+                      <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu" aria-labelledby="inputMovement">
+                      <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Mitchell</a></li>
+                      <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Howell</a></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <h4 class="well-label">North / South Pairs</h4>
+              <div class="well" id="north-south-pairs">
+                <div class="row">
+                  <!-- Pair 1 -->
+                  <label for="ns-pair1" class="col-sm-2 form-control-label">Pair 1</label>
+                  <div class="col-sm-10 pair ns-pair" id="ns-pair1">
+                    <input type="text" class="form-control" id="pair1North" placeholder="North">
+                    <input type="text" class="form-control" id="pair1South" placeholder="South">
+                  </div>
+                  <button id="add-ns-pair-button" type="button" class="btn btn-primary shift-right">Add Pair</button>
+                </div>
+              </div>
+
+              <h4 class="well-label">East / West Pairs</h4>
+              <div class="well" id="east-west-pairs">
+                <div class="form-group row">
+                  <!-- Pair 1 -->
+                  <label for="ew-pair1" class="col-sm-2 form-control-label">Pair 1</label>
+                  <div class="col-sm-10 pair ew-pair" id="ew-pair1">
+                    <input type="text" class="form-control" id="pair1East" placeholder="East">
+                    <input type="text" class="form-control" id="pair1West" placeholder="West">
+                  </div>
+                  <button id="add-ew-pair-button" type="button" class="btn btn-primary shift-right">Add Pair</button>
+                </div>
+              </div>
+
             </form>
           </div>
+
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
             <button type="button" class="btn btn-primary">Enter Scores</button>
@@ -70,10 +118,44 @@
       </div>
     </div>
 
-<script type="text/javascript">
-$(function() {
-  $('#inputDate').datepicker();
-});
-</script>
+<!-- Accordion -->
+    <div id="accordion" role="tablist" aria-multiselectable="true">
+      <div class="panel panel-default">
+        <div class="panel-heading" role="tab" id="headingOne">
+          <h4 class="panel-title">
+            <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+              Collapsible Group Item #1
+            </a>
+          </h4>
+        </div>
+        <div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+          Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+        </div>
+      </div>
+      <div class="panel panel-default">
+        <div class="panel-heading" role="tab" id="headingTwo">
+          <h4 class="panel-title">
+            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+              Collapsible Group Item #2
+            </a>
+          </h4>
+        </div>
+        <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+          Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+        </div>
+      </div>
+      <div class="panel panel-default">
+        <div class="panel-heading" role="tab" id="headingThree">
+          <h4 class="panel-title">
+            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+              Collapsible Group Item #3
+            </a>
+          </h4>
+        </div>
+        <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+          Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+        </div>
+      </div>
+    </div>
   </body>
 </html>

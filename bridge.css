@@ -1,0 +1,12 @@
+.pair {
+  display: flex;
+}
+
+.shift-right {
+  margin-left: 16px;
+}
+
+.well-label {
+  font-weight: bold;
+  margin-bottom: 0px;
+}
