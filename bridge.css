@@ -10,3 +10,12 @@
   font-weight: bold;
   margin-bottom: 0px;
 }
+
+.accordion-scores {
+  margin-bottom: 0px !important;
+}
+
+#accordion {
+  margin: auto;
+  width: 75%;
+}
