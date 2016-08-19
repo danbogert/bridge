@@ -11,11 +11,19 @@
   margin-bottom: 0px;
 }
 
-.accordion-scores {
-  margin-bottom: 0px !important;
+.no-margin {
+  margin: 0px !important;
+}
+
+.modal-dialog {
+  width: 800px;
 }
 
 #accordion {
   margin: auto;
   width: 75%;
+}
+
+table {
+  width: 100%;
 }
