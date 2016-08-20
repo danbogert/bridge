@@ -7,9 +7,15 @@ class Event {
 }
 
 class Hand {
-  constructor(ns_pair, ew_pair, board) {
+  constructor(number, table_hands) {
+    this.number = number;
+    this.table_hands = table_hands;
+  }
+}
+
+class TableHand {
+  constructor(ns_pair, board) {
     this.ns_pair = ns_pair;
-    this.ew_pair = ew_pair;
     this.board = board;
   }
 }
@@ -130,34 +136,97 @@ function createEvent() {
   }
 
   var number_hands_per_table = $('#hands-per-table').text().trim();
-  var total_number_of_hands = number_hands_per_table * Math.min(number_ns_pairs, number_ew_pairs);
+  var number_of_tables = Math.max(number_ns_pairs, number_ew_pairs);
+  var total_number_of_hands = number_hands_per_table * number_of_tables;
 
-// create boards
   var boards = createBoards(total_number_of_hands);
 
-// create hands
-// create event
+  var hands = [];
+  for (var hand_id = 1; hand_id <= total_number_of_hands; hand_id++) {
+    hands.push(new Hand(hand_id, createTableHands(hand_id, ns_pairs, boards, number_hands_per_table)));
+  }
 
+  var event = new Event(hands);
+  console.log(event);
+  createScoringAccordion(event);
+}
 
+function createBoards(total_number_of_hands) {
+  var boards = [];
 
-  var tableContent = createTableContent();
   for (var i = 1; i <= total_number_of_hands; i++) {
+    if (i % 16 == 0) {
+      boards.push(new Board(i, Dealer.WEST, Vulnerable.EW));
+    } else if (i % 15 == 0) {
+      boards.push(new Board(i, Dealer.SOUTH, Vulnerable.NS));
+    } else if (i % 14 == 0) {
+      boards.push(new Board(i, Dealer.EAST, Vulnerable.NONE));
+    } else if (i % 13 == 0) {
+      boards.push(new Board(i, Dealer.NORTH, Vulnerable.ALL));
+    } else if (i % 12 == 0) {
+      boards.push(new Board(i, Dealer.WEST, Vulnerable.NS));
+    } else if (i % 11 == 0) {
+      boards.push(new Board(i, Dealer.SOUTH, Vulnerable.NONE));
+    } else if (i % 10 == 0) {
+      boards.push(new Board(i, Dealer.EAST, Vulnerable.ALL));
+    } else if (i % 9 == 0) {
+      boards.push(new Board(i, Dealer.NORTH, Vulnerable.EW));
+    } else if (i % 8 == 0) {
+      boards.push(new Board(i, Dealer.WEST, Vulnerable.NONE));
+    } else if (i % 7 == 0) {
+      boards.push(new Board(i, Dealer.SOUTH, Vulnerable.ALL));
+    } else if (i % 6 == 0) {
+      boards.push(new Board(i, Dealer.EAST, Vulnerable.EW));
+    } else if (i % 5 == 0) {
+      boards.push(new Board(i, Dealer.NORTH, Vulnerable.NS));
+    } else if (i % 4 == 0) {
+      boards.push(new Board(i, Dealer.WEST, Vulnerable.ALL));
+    } else if (i % 3 == 0) {
+      boards.push(new Board(i, Dealer.SOUTH, Vulnerable.EW));
+    } else if (i % 2 == 0) {
+      boards.push(new Board(i, Dealer.EAST, Vulnerable.NS));
+    } else {
+      boards.push(new Board(i, Dealer.NORTH, Vulnerable.NONE));
+    }
+  }
 
+  return boards;
+}
+
+function createTableHands(hand_num, ns_pairs, boards, hands_per_table) {
+  var table_hands = [];
+  var max_boards = boards.length;
+
+  for (var table_num = 1; table_num <= ns_pairs.length; table_num++) {
+    var board_num = (table_num * hands_per_table) - hands_per_table + hand_num;
+    if (board_num > max_boards) {
+      board_num -= max_boards;
+    }
+
+    table_hands.push(new TableHand(ns_pairs[table_num - 1], boards[board_num - 1]));
+  }
+
+  return table_hands;
+}
+
+function createScoringAccordion(event) {
+  var hands = event.hands;
+  for (var hand_num = 1; hand_num <= hands.length; hand_num++) {
     $("#accordion").append(
       "<div class='no-margin panel panel-default'>" +
-        "<div class='no-margin alert alert-danger' role='tab' id='heading" + i + "'>" +
+        "<div class='no-margin alert alert-danger' role='tab' id='heading" + hand_num + "'>" +
           "<h4 class='panel-title'>" +
-            "<a data-toggle='collapse' data-parent='#accordion' href='#collapse" + i + "' aria-expanded='true' aria-controls='collapse" + i + "'>" +
-              "Hand " + i +
+            "<a data-toggle='collapse' data-parent='#accordion' href='#collapse" + hand_num + "' aria-expanded='true' aria-controls='collapse" + hand_num + "'>" +
+              "Hand " + hand_num +
             "</a>" +
           "</h4>" +
         "</div>" +
-        "<div id='collapse" + i + "' class='panel-collapse collapse' role='tabpanel' aria-labelledby='heading" + i + "'>" +
+        "<div id='collapse" + hand_num + "' class='panel-collapse collapse' role='tabpanel' aria-labelledby='heading" + hand_num + "'>" +
           "<table>" +
             "<tr>" +
-              "<th>North/South</th><th>East/West</th><th>Contract</th><th>By</th><th>Tricks</th><th>Score</th><th>MPs</th>" +
+              "<th>Board</th><th>North/South</th><th>East/West</th><th>Contract</th><th>By</th><th>Tricks</th><th>Score</th><th>MPs</th>" +
             "</tr>" +
-            tableContent +
+            createScoringTable(hands[hand_num - 1]) +
           "</table>" +
         "</div>" +
       "</div>");
@@ -166,33 +235,20 @@ function createEvent() {
   $("#collapse1").addClass("in")
 }
 
-function createBoards(total_number_of_hands) {
-  // new Board(1, Dealer.NORTH, Vulnerable.NONE);
-  // new Board(2, Dealer.EAST, Vulnerable.NS);
-  // new Board(3, Dealer.SOUTH, Vulnerable.EW);
-  // new Board(4, Dealer.WEST, Vulnerable.ALL);
-  // new Board(5, Dealer.NORTH, Vulnerable.NS);
-  // new Board(6, Dealer.EAST, Vulnerable.EW);
-  // new Board(7, Dealer.SOUTH, Vulnerable.ALL);
-  // new Board(8, Dealer.WEST, Vulnerable.NONE);
-  // new Board(9, Dealer.NORTH, Vulnerable.EW);
-  // new Board(10, Dealer.EAST, Vulnerable.ALL);
-  // new Board(11, Dealer.SOUTH, Vulnerable.NONE);
-  // new Board(12, Dealer.WEST, Vulnerable.NS);
-  // new Board(13, Dealer.NORTH, Vulnerable.ALL);
-  // new Board(14, Dealer.EAST, Vulnerable.NONE);
-  // new Board(15, Dealer.SOUTH, Vulnerable.NS);
-  // new Board(16, Dealer.WEST, Vulnerable.EW);
-}
-
-function createTableContent() {
+function createScoringTable(hand) {
+  var table_hands = hand.table_hands;
   var content = "";
-  var number_ns_pairs = $(".ns-pair").length;
-  var number_ew_pairs = $(".ew-pair").length;
-  for (var i = 1; i <= number_ns_pairs; i++) {
-    for (var j = 1; j <= number_ew_pairs; j++) {
-      content += "<tr><td>" + i + "</td><td>" + j + "</td><td>5S</td><td>N</td><td>6</td><td>50</td><td>10</td></tr>"
-    }
+  for (var i = 0; i < table_hands.length; i++) {
+    content += "<tr>" +
+                  "<td>" + table_hands[i].board.number + "</td>" +
+                  "<td>" + table_hands[i].ns_pair.number + "</td>" +
+                  "<td><input type='text' class='form-control' id='" + hand.number + "-" + i + "-ew' placeholder='E/W'></td>" +
+                  "<td><input type='text' class='form-control' id='" + hand.number + "-" + i + "-contract' placeholder='Contract'></td>" +
+                  "<td><input type='text' class='form-control' id='" + hand.number + "-" + i + "-by' placeholder='By'></td>" +
+                  "<td><input type='text' class='form-control' id='" + hand.number + "-" + i + "-tricks' placeholder='Tricks'></td>" +
+                  "<td>50</td>" +
+                  "<td>10</td>" +
+                "</tr>";
   }
   return content;
 }
