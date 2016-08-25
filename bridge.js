@@ -1,6 +1,6 @@
 "use strict";
 
-class Event {
+class BridgeEvent {
   constructor(hands) {
     this.hands = hands;
   }
@@ -63,7 +63,6 @@ $(function() {
 
   $(".dropdown-menu li a").click(function() {
     $(this).parents(".dropdown").find('.btn').html($(this).text() + ' <span class="caret"></span>');
-    $(this).parents(".dropdown").find('.btn').val($(this).data('value'));
   });
 
   $("#add-ns-pair-button").click(addNorthSouthPair);
@@ -77,8 +76,8 @@ function addNorthSouthPair() {
   var nextId = $(".ns-pair").length + 1;
   $("<label id='ns-pair" + nextId + "-label' for='ns-pair" + nextId + "' class='col-sm-2 form-control-label'>Pair " + nextId + "</label>" +
     "<div class='col-sm-10 pair ns-pair' id='ns-pair" + nextId + "'>" +
-      "<input type='text' class='form-control' id='pair" + nextId + "-north' placeholder='North'>" +
-      "<input type='text' class='form-control' id='pair" + nextId + "-south' placeholder='South'>" +
+      "<input type='text' class='form-control' id='pair" + nextId + "-north' placeholder='North' required>" +
+      "<input type='text' class='form-control' id='pair" + nextId + "-south' placeholder='South' required>" +
     "</div>").insertBefore($("#add-ns-pair-button"));
 }
 
@@ -86,8 +85,8 @@ function addEastWestPair() {
   var nextId = $(".ew-pair").length + 1;
   $("<label id='ew-pair" + nextId + "-label' for='ew-pair" + nextId + "' class='col-sm-2 form-control-label'>Pair " + nextId + "</label>" +
     "<div class='col-sm-10 pair ew-pair' id='ew-pair" + nextId + "'>" +
-      "<input type='text' class='form-control' id='pair" + nextId + "-east' placeholder='East'>" +
-      "<input type='text' class='form-control' id='pair" + nextId + "west' placeholder='West'>" +
+      "<input type='text' class='form-control' id='pair" + nextId + "-east' placeholder='East' required>" +
+      "<input type='text' class='form-control' id='pair" + nextId + "west' placeholder='West' required>" +
     "</div>").insertBefore($("#add-ew-pair-button"));
 }
 
@@ -146,9 +145,19 @@ function createEvent() {
     hands.push(new Hand(hand_id, createTableHands(hand_id, ns_pairs, boards, number_hands_per_table)));
   }
 
-  var event = new Event(hands);
-  console.log(event);
-  createScoringAccordion(event);
+  var bridgeEvent = new BridgeEvent(hands);
+  console.log(bridgeEvent);
+  createScoringAccordion(bridgeEvent, ns_pairs, ew_pairs);
+
+  $(".dropdown-menu li a").click(function() {
+    $(this).parents(".dropdown").find('.btn').html($(this).text() + ' <span class="caret"></span>');
+  });
+
+  $('.selectpicker').selectpicker({
+    style: 'btn-default',
+    size: 4
+  });
+
 }
 
 function createBoards(total_number_of_hands) {
@@ -209,8 +218,8 @@ function createTableHands(hand_num, ns_pairs, boards, hands_per_table) {
   return table_hands;
 }
 
-function createScoringAccordion(event) {
-  var hands = event.hands;
+function createScoringAccordion(bridgeEvent, ns_pairs, ew_pairs) {
+  var hands = bridgeEvent.hands;
   for (var hand_num = 1; hand_num <= hands.length; hand_num++) {
     $("#accordion").append(
       "<div class='no-margin panel panel-default'>" +
@@ -222,12 +231,17 @@ function createScoringAccordion(event) {
           "</h4>" +
         "</div>" +
         "<div id='collapse" + hand_num + "' class='panel-collapse collapse' role='tabpanel' aria-labelledby='heading" + hand_num + "'>" +
-          "<table>" +
-            "<tr>" +
-              "<th>Board</th><th>North/South</th><th>East/West</th><th>Contract</th><th>By</th><th>Tricks</th><th>Score</th><th>MPs</th>" +
-            "</tr>" +
-            createScoringTable(hands[hand_num - 1]) +
-          "</table>" +
+          "<div class='row header'>" +
+            "<div class='col-sm-1 header'>Board</div>" +
+            "<div class='col-sm-1'>North/South</div>" +
+            "<div class='col-sm-2'>East/West</div>" +
+            "<div class='col-sm-2'>Contract</div>" +
+            "<div class='col-sm-2'>By</div>" +
+            "<div class='col-sm-2'>Tricks</div>" +
+            "<div class='col-sm-1'>Score</div>" +
+            "<div class='col-sm-1'>MPs</div>" +
+          "</div>" +
+          createScoringForms(hands[hand_num - 1], ns_pairs, ew_pairs) +
         "</div>" +
       "</div>");
   }
@@ -235,20 +249,57 @@ function createScoringAccordion(event) {
   $("#collapse1").addClass("in")
 }
 
-function createScoringTable(hand) {
+function createScoringForms(hand, ns_pairs, ew_pairs) {
+  var ew_pair_numbers = [];
+  for (var i = 1; i <= ew_pairs.length; i++) {
+    ew_pair_numbers.push(i);
+  }
+
+  if (ns_pairs.length != ew_pairs.length) {
+    ew_pair_numbers.push("Skip");
+  }
+
   var table_hands = hand.table_hands;
   var content = "";
   for (var i = 0; i < table_hands.length; i++) {
-    content += "<tr>" +
-                  "<td>" + table_hands[i].board.number + "</td>" +
-                  "<td>" + table_hands[i].ns_pair.number + "</td>" +
-                  "<td><input type='text' class='form-control' id='" + hand.number + "-" + i + "-ew' placeholder='E/W'></td>" +
-                  "<td><input type='text' class='form-control' id='" + hand.number + "-" + i + "-contract' placeholder='Contract'></td>" +
-                  "<td><input type='text' class='form-control' id='" + hand.number + "-" + i + "-by' placeholder='By'></td>" +
-                  "<td><input type='text' class='form-control' id='" + hand.number + "-" + i + "-tricks' placeholder='Tricks'></td>" +
-                  "<td>50</td>" +
-                  "<td>10</td>" +
-                "</tr>";
+    content += "<div class='row'>" +
+                  "<form id='" + hand.number + "-" + i + "-form' action='javascript:void(0);'>" +
+                    "<div class='col-sm-1'>" + table_hands[i].board.number + "</div>" +
+                    "<div class='col-sm-1'>" + table_hands[i].ns_pair.number + "</div>" +
+                    "<div class='col-sm-2'>" + createDropdown(hand.number + '-' + i, "-ew", "E/W", ew_pair_numbers) + "</div>" +
+                    "<div class='col-sm-2'><input type='text' pattern='^[1-7][SsDdCcHhNn]([Xx])?([Xx])?$' class='form-control uppercase' id='" + hand.number + "-" + i + "-contract' required></div>" +
+                    "<div class='col-sm-2'>" + createDropdown(hand.number + '-' + i, "-by", "By", ["North", "South", "East", "West"]) + "</div>" +
+                    "<div class='col-sm-2'>" + createDropdown(hand.number + '-' + i, "-tricks", "Contract", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]) + "</div>" +
+                    "<div class='col-sm-1'>50</div>" +
+                    "<div class='col-sm-1'>10</div>" +
+                    "<button id='" + hand.number + "-" + i + "-submit' type='submit' class='btn btn-primary hidden'>Submit</button>" +
+                  "</form>" +
+                "</div>";
   }
+
   return content;
+}
+
+function createDropdown(base_id, dropdown_id, text, values) {
+  var dropdown_values = "";
+  for (var i = 0; i < values.length; i++) {
+    dropdown_values += "<option value='" + values[i] + "'>" + values[i] + "</option>";
+  }
+
+  return "<select id='" + base_id + dropdown_id + "' class='selectpicker btn-default' onchange='isRowComplete(\"" + base_id + "\")' required>" +
+            "<option value='' disabled selected>" + text + "</option>" +
+            dropdown_values +
+          "</select>";
+}
+
+function isRowComplete(id) {
+  if (isValid(id + "-ew") && isValid(id + "-contract") && isValid(id + "-by") && isValid(id + "-tricks")) {
+    console.log("score!");
+  } else {
+    console.log("don't score!");
+  }
+}
+
+function isValid(id) {
+  return $("#" + id)[0].checkValidity();
 }

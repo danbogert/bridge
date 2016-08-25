@@ -19,6 +19,40 @@
   width: 800px;
 }
 
+.aligned {
+  display: inline-flex;
+}
+
+.active {
+  background-color: red !important;
+}
+
+.uppercase {
+  text-transform: uppercase;
+}
+
+.dropdown-scoring {
+  width: 150px;
+  padding-right: 5px;
+}
+
+.right {
+  float: right;
+}
+
+.btn-default {
+  background-image: none;
+}
+
+.header {
+  font-size: large;
+  font-weight: bold;
+}
+
+.hidden {
+  display: none;
+}
+
 #accordion {
   margin: auto;
   width: 75%;
@@ -26,4 +60,12 @@
 
 table {
   width: 100%;
+}
+
+input:invalid {
+  border: 2px solid red;
+}
+
+input:valid {
+  border: 2px solid green;
 }
