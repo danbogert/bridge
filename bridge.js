@@ -58,6 +58,8 @@ var Vulnerable = {
   ALL: 4,
 };
 
+var thisEvent;
+
 $(function() {
   $('#date').datepicker();
 
@@ -146,7 +148,7 @@ function createEvent() {
   }
 
   var bridgeEvent = new BridgeEvent(hands);
-  console.log(bridgeEvent);
+  thisEvent = bridgeEvent;
   createScoringAccordion(bridgeEvent, ns_pairs, ew_pairs);
 
   $(".dropdown-menu li a").click(function() {
@@ -241,7 +243,7 @@ function createScoringAccordion(bridgeEvent, ns_pairs, ew_pairs) {
             "<div class='col-sm-1'>Score</div>" +
             "<div class='col-sm-1'>MPs</div>" +
           "</div>" +
-          createScoringForms(hands[hand_num - 1], ns_pairs, ew_pairs) +
+          createScoringForms(hands[hand_num - 1], ns_pairs, ew_pairs, bridgeEvent) +
         "</div>" +
       "</div>");
   }
@@ -249,7 +251,7 @@ function createScoringAccordion(bridgeEvent, ns_pairs, ew_pairs) {
   $("#collapse1").addClass("in")
 }
 
-function createScoringForms(hand, ns_pairs, ew_pairs) {
+function createScoringForms(hand, ns_pairs, ew_pairs, bridgeEvent) {
   var ew_pair_numbers = [];
   for (var i = 1; i <= ew_pairs.length; i++) {
     ew_pair_numbers.push(i);
@@ -264,12 +266,12 @@ function createScoringForms(hand, ns_pairs, ew_pairs) {
   for (var i = 0; i < table_hands.length; i++) {
     content += "<div class='row'>" +
                   "<form id='" + hand.number + "-" + i + "-form' action='javascript:void(0);'>" +
-                    "<div class='col-sm-1'>" + table_hands[i].board.number + "</div>" +
-                    "<div class='col-sm-1'>" + table_hands[i].ns_pair.number + "</div>" +
-                    "<div class='col-sm-2'>" + createDropdown(hand.number + '-' + i, "-ew", "E/W", ew_pair_numbers) + "</div>" +
+                    "<div class='col-sm-1'><input type='text' id='" + hand.number + "-" + i + "-board' value='" + table_hands[i].board.number + "' disabled></div>" +
+                    "<div class='col-sm-1'><input type='text' id='" + hand.number + "-" + i + "-ns' value='" + table_hands[i].ns_pair.number + "' disabled></div>" +
+                    "<div class='col-sm-2'>" + createDropdown(hand.number + '-' + i, "-ew", "E/W", ew_pair_numbers, bridgeEvent) + "</div>" +
                     "<div class='col-sm-2'><input type='text' pattern='^[1-7][SsDdCcHhNn]([Xx])?([Xx])?$' class='form-control uppercase' id='" + hand.number + "-" + i + "-contract' required></div>" +
-                    "<div class='col-sm-2'>" + createDropdown(hand.number + '-' + i, "-by", "By", ["North", "South", "East", "West"]) + "</div>" +
-                    "<div class='col-sm-2'>" + createDropdown(hand.number + '-' + i, "-tricks", "Contract", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]) + "</div>" +
+                    "<div class='col-sm-2'>" + createDropdown(hand.number + '-' + i, "-by", "By", ["North", "South", "East", "West"], bridgeEvent) + "</div>" +
+                    "<div class='col-sm-2'>" + createDropdown(hand.number + '-' + i, "-tricks", "Contract", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], bridgeEvent) + "</div>" +
                     "<div class='col-sm-1'>50</div>" +
                     "<div class='col-sm-1'>10</div>" +
                     "<button id='" + hand.number + "-" + i + "-submit' type='submit' class='btn btn-primary hidden'>Submit</button>" +
@@ -280,26 +282,127 @@ function createScoringForms(hand, ns_pairs, ew_pairs) {
   return content;
 }
 
-function createDropdown(base_id, dropdown_id, text, values) {
+function createDropdown(table_hand_id, dropdown_id, text, values, bridgeEvent) {
   var dropdown_values = "";
   for (var i = 0; i < values.length; i++) {
     dropdown_values += "<option value='" + values[i] + "'>" + values[i] + "</option>";
   }
 
-  return "<select id='" + base_id + dropdown_id + "' class='selectpicker btn-default' onchange='isRowComplete(\"" + base_id + "\")' required>" +
+  return "<select id='" + table_hand_id + dropdown_id + "' class='selectpicker btn-default' onchange='isRowComplete(\"" + table_hand_id + "\")' required>" +
             "<option value='' disabled selected>" + text + "</option>" +
             dropdown_values +
           "</select>";
 }
 
-function isRowComplete(id) {
-  if (isValid(id + "-ew") && isValid(id + "-contract") && isValid(id + "-by") && isValid(id + "-tricks")) {
-    console.log("score!");
-  } else {
-    console.log("don't score!");
+function isRowComplete(table_hand_id) {
+  if (isValid(table_hand_id + "-ew") && isValid(table_hand_id + "-contract") && isValid(table_hand_id + "-by") && isValid(table_hand_id + "-tricks")) {
+    calculateScore(table_hand_id);
   }
 }
 
-function isValid(id) {
-  return $("#" + id)[0].checkValidity();
+function isValid(table_hand_id) {
+  return $("#" + table_hand_id)[0].checkValidity();
+}
+
+function calculateScore(table_hand_id) {
+  var board_number = $("#" + table_hand_id + "-board").val();
+  var ns_number = $("#" + table_hand_id + "-ns").val();
+  var ew_number = $("#" + table_hand_id + "-ew").val();
+  var contract = $("#" + table_hand_id + "-contract").val().toUpperCase();
+  var declarer = $("#" + table_hand_id + "-by").val();
+  var taken_num_tricks = $("#" + table_hand_id + "-tricks").val();
+
+  var doubled = contract.indexOf("X") > 0;
+  var redoubled = contract.indexOf("XX") > 0;
+
+  var ids = table_hand_id.split("-");
+  var hand_id = parseInt(ids[0]) - 1;
+  var table_hand_id = parseInt(ids[1]);
+  var board = thisEvent.hands[hand_id].table_hands[table_hand_id].board;
+
+  var contract_num_tricks = parseInt(contract.charAt(0));
+  var difference_num_tricks = (taken_num_tricks - 6) - contract_num_tricks;
+
+  if (difference_num_tricks < 0) {
+    var vulnerable = isDeclarerVulnerable(declarer, board);
+    var penalty_points = calculatePenaltyPoints(difference_num_tricks * -1, vulnerable, doubled, redoubled);
+
+    console.log("penalty: " + penalty_points);
+  } else {
+    // calculate points!!
+  }
+}
+
+function isDeclarerVulnerable(player, board) {
+  if (board.vulnerable === Vulnerable.ALL) {
+    return true;
+  } else if (board.vulnerable === Vulnerable.NONE) {
+    return false;
+  } else if (board.vulnerable === Vulnerable.NS && (player === "North" || player === "South")) {
+    return true;
+  } else if (board.vulnerable === Vulnerable.EW && (player === "East" || player === "West")) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function calculatePenaltyPoints(difference_num_tricks, vulnerable, doubled, redoubled) {
+  var penalty_points = 0;
+
+  for (var i = 1; i <= difference_num_tricks; i++) {
+    if (redoubled) {
+      penalty_points += getRedoubledPenalty(i, vulnerable);
+    } else if (doubled) {
+      penalty_points += getDoubledPenalty(i, vulnerable);
+    } else {
+      penalty_points += getUndoubledPenalty(vulnerable);
+    }
+  }
+
+  return penalty_points;
+}
+
+function getRedoubledPenalty(undertrick_num, vulnerable) {
+  if (vulnerable) {
+    if (undertrick_num === 1) {
+      return 400;
+    } else {
+      return 600;
+    }
+  } else {
+    if (undertrick_num === 1) {
+      return 200;
+    } else if (undertrick_num === 2 || undertrick_num === 3) {
+      return 400;
+    } else {
+      return 600;
+    }
+  }
+}
+
+function getDoubledPenalty(undertrick_num, vulnerable) {
+  if (vulnerable) {
+    if (undertrick_num === 1) {
+      return 200;
+    } else {
+      return 300;
+    }
+  } else {
+    if (undertrick_num === 1) {
+      return 100;
+    } else if (undertrick_num === 2 || undertrick_num === 3) {
+      return 200;
+    } else {
+      return 300;
+    }
+  }
+}
+
+function getUndoubledPenalty(vulnerable) {
+  if (vulnerable) {
+    return 100;
+  } else {
+    return 50;
+  }
 }
