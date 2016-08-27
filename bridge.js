@@ -232,11 +232,9 @@ function createScoringAccordion(bridgeEvent, ns_pairs, ew_pairs) {
   for (var hand_num = 1; hand_num <= hands.length; hand_num++) {
     $("#accordion").append(
       "<div class='no-margin panel panel-default'>" +
-        "<div class='no-margin alert alert-danger' role='tab' id='heading" + hand_num + "'>" +
+        "<div class='no-margin alert alert-danger clickable' role='tab' id='heading" + hand_num + "' data-toggle='collapse' data-parent='#accordion' data-target='#collapse" + hand_num + "'>" +
           "<h4 class='panel-title'>" +
-            "<a data-toggle='collapse' data-parent='#accordion' href='#collapse" + hand_num + "' aria-expanded='true' aria-controls='collapse" + hand_num + "'>" +
-              "Hand " + hand_num +
-            "</a>" +
+            "Hand " + hand_num +
           "</h4>" +
         "</div>" +
         "<div id='collapse" + hand_num + "' class='panel-collapse collapse' role='tabpanel' aria-labelledby='heading" + hand_num + "'>" +
@@ -330,16 +328,16 @@ function calculateScore(full_table_hand_id) {
   var contract_num_tricks = parseInt(contract.charAt(0));
   var difference_num_tricks = (taken_num_tricks - 6) - contract_num_tricks;
 
+  thisEvent.hands[hand_id].table_hands[table_hand_id].ew_pair = ew_number;
+
   if (difference_num_tricks < 0) {
     var vulnerable = isDeclarerVulnerable(declarer, board);
     var penalty_points = calculatePenaltyPoints(difference_num_tricks * -1, vulnerable, doubled, redoubled);
 
     if (declarer === "North" || declarer === "South") {
-      $("#" + full_table_hand_id + "-nsscore").val(penalty_points * -1);
-      $("#" + full_table_hand_id + "-ewscore").val(penalty_points);
+      setScores(full_table_hand_id, hand_id, table_hand_id, penalty_points * -1);
     } else {
-      $("#" + full_table_hand_id + "-nsscore").val(penalty_points);
-      $("#" + full_table_hand_id + "-ewscore").val(penalty_points * -1);
+      setScores(full_table_hand_id, hand_id, table_hand_id, penalty_points);
     }
   } else {
     var vulnerable = isDefenderVulnerable(declarer, board);
@@ -347,12 +345,19 @@ function calculateScore(full_table_hand_id) {
     var victory_points = calculateVictoryPoints(contract_num_tricks, difference_num_tricks, suit, vulnerable, doubled, redoubled);
 
     if (declarer === "North" || declarer === "South") {
-      $("#" + full_table_hand_id + "-nsscore").val(victory_points);
-      $("#" + full_table_hand_id + "-ewscore").val(victory_points * -1);
+      setScores(full_table_hand_id, hand_id, table_hand_id, victory_points);
     } else {
-      $("#" + full_table_hand_id + "-nsscore").val(victory_points * -1);
-      $("#" + full_table_hand_id + "-ewscore").val(victory_points);
+      setScores(full_table_hand_id, hand_id, table_hand_id, victory_points * -1);
     }
+  }
+
+  if (allTableHandsScored(thisEvent.hands[hand_id].table_hands)) {
+    $("#heading" + (hand_id + 1)).removeClass("alert-danger");
+    $("#heading" + (hand_id + 1)).addClass("alert-success");
+  }
+
+  if (allHandsScored()) {
+    console.log("PERFORM FINAL SCORING!");
   }
 }
 
@@ -571,4 +576,29 @@ function getGameBonus(contract_points, vulnerable) {
 
   console.log("game bonus: " + game_bonus);
   return game_bonus;
+}
+
+// Pass the score for ns
+function setScores(full_table_hand_id, hand_id, table_hand_id, score) {
+  $("#" + full_table_hand_id + "-nsscore").val(score);
+  thisEvent.hands[hand_id].table_hands[table_hand_id].ns_score = score;
+
+  $("#" + full_table_hand_id + "-ewscore").val(score * -1);
+  thisEvent.hands[hand_id].table_hands[table_hand_id].ew_score = score * -1;
+}
+
+function allTableHandsScored(table_hands) {
+  console.log(table_hands);
+
+  for (var i = 0; i < table_hands.length; i++) {
+    if (table_hands[i].ns_score === undefined) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function allHandsScored() {
+  return thisEvent.hands.length === $("#accordion div .alert-success").length;
 }

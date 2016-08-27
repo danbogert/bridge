@@ -11,6 +11,10 @@
   margin-bottom: 0px;
 }
 
+.clickable {
+    cursor: pointer;
+}
+
 .no-margin {
   margin: 0px !important;
 }
