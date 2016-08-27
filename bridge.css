@@ -53,6 +53,11 @@
   display: none;
 }
 
+.text-only {
+  background: none;
+  border: none;
+}
+
 #accordion {
   margin: auto;
   width: 75%;
@@ -62,10 +67,10 @@ table {
   width: 100%;
 }
 
-input:invalid {
+/*input:invalid {
   border: 2px solid red;
 }
 
 input:valid {
   border: 2px solid green;
-}
+}*/
