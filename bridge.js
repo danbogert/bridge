@@ -166,7 +166,6 @@ function createEvent() {
   $('.selectpicker').selectpicker({
     style: 'btn-default'
   });
-
 }
 
 function createBoards(total_number_of_hands) {
@@ -239,7 +238,7 @@ function createScoringAccordion(bridgeEvent, ns_pairs, ew_pairs) {
         "</div>" +
         "<div id='collapse" + hand_num + "' class='panel-collapse collapse' role='tabpanel' aria-labelledby='heading" + hand_num + "'>" +
           "<div class='row header'>" +
-            "<div class='col-sm-1 header'>Board</div>" +
+            "<div class='col-sm-1'>Board</div>" +
             "<div class='col-sm-1'>North/South</div>" +
             "<div class='col-sm-2'>East/West</div>" +
             "<div class='col-sm-2'>Contract</div>" +
@@ -300,9 +299,13 @@ function createDropdown(table_hand_id, dropdown_id, text, values, bridgeEvent) {
 }
 
 function isRowComplete(table_hand_id) {
+  var currentlyActive = $(document.activeElement);
+
   if (isValid(table_hand_id + "-ew") && isValid(table_hand_id + "-contract") && isValid(table_hand_id + "-by") && isValid(table_hand_id + "-tricks")) {
     calculateScore(table_hand_id);
   }
+
+  currentlyActive.focus();
 }
 
 function isValid(table_hand_id) {

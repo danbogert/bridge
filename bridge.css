@@ -49,6 +49,7 @@
 }
 
 .header {
+  padding-top: 10px;
   font-size: large;
   font-weight: bold;
 }
@@ -62,9 +63,38 @@
   border: none;
 }
 
+.row {
+  padding-bottom: 10px;
+}
+
+.scoring-element {
+
+}
+
 #accordion {
   margin: auto;
-  width: 75%;
+  width: 85%;
+}
+
+/*body {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 18px;
+}*/
+
+html, body, form, fieldset, table, tr, td, img {
+    font: 17px arial,helvetica,sans-serif;
+}
+
+input, button, select, textarea, optgroup, option {
+    font-family: inherit;
+    font-size: inherit;
+    font-style: inherit;
+    font-weight: inherit;
+}
+
+/* rest of your styles; like: */
+body {
+    font-size: 17px;
 }
 
 table {
