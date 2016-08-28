@@ -164,7 +164,9 @@ function createEvent() {
   });
 
   $('.selectpicker').selectpicker({
-    style: 'btn-default'
+    style: 'btn-default',
+    // width: '110px',
+    width: '100%',
   });
 }
 
@@ -238,14 +240,17 @@ function createScoringAccordion(bridgeEvent, ns_pairs, ew_pairs) {
         "</div>" +
         "<div id='collapse" + hand_num + "' class='panel-collapse collapse' role='tabpanel' aria-labelledby='heading" + hand_num + "'>" +
           "<div class='row header'>" +
-            "<div class='col-sm-1'>Board</div>" +
-            "<div class='col-sm-1'>North/South</div>" +
-            "<div class='col-sm-2'>East/West</div>" +
+            "<div class='col-sm-1'><span>N/S</span></div>" +
+            "<div class='col-sm-2'>E/W</div>" +
             "<div class='col-sm-2'>Contract</div>" +
             "<div class='col-sm-2'>By</div>" +
             "<div class='col-sm-2'>Tricks</div>" +
-            "<div class='col-sm-1'>N/S Score</div>" +
-            "<div class='col-sm-1'>E/W Score</div>" +
+            "<div class='col-sm-3'>" +
+              "<div class='row'>" +
+                "<div class='col-sm-6'>N/S Score</div>" +
+                "<div class='col-sm-6'>E/W Score</div>" +
+              "</div>" +
+            "</div>" +
           "</div>" +
           createScoringForms(hands[hand_num - 1], ns_pairs, ew_pairs, bridgeEvent) +
         "</div>" +
@@ -270,15 +275,17 @@ function createScoringForms(hand, ns_pairs, ew_pairs, bridgeEvent) {
   for (var i = 0; i < table_hands.length; i++) {
     content += "<div class='row'>" +
                   "<form id='" + hand.number + "-" + i + "-form' action='javascript:void(0);'>" +
-                    "<div class='col-sm-1'><input class='text-only' type='text' id='" + hand.number + "-" + i + "-board' value='" + table_hands[i].board.number + "'></div>" +
                     "<div class='col-sm-1'><input class='text-only' type='text' id='" + hand.number + "-" + i + "-ns' value='" + table_hands[i].ns_pair.number + "' disabled></div>" +
                     "<div class='col-sm-2'>" + createDropdown(hand.number + '-' + i, "-ew", "E/W", ew_pair_numbers, bridgeEvent) + "</div>" +
                     "<div class='col-sm-2'><input type='text' pattern='^[1-7][SsDdCcHhNn]([Xx])?([Xx])?$' class='form-control uppercase' id='" + hand.number + "-" + i + "-contract'  oninput='isRowComplete(\"" + hand.number + "-" + i + "\")' required></div>" +
                     "<div class='col-sm-2'>" + createDropdown(hand.number + '-' + i, "-by", "By", ["North", "South", "East", "West"], bridgeEvent) + "</div>" +
                     "<div class='col-sm-2'>" + createDropdown(hand.number + '-' + i, "-tricks", "Contract", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], bridgeEvent) + "</div>" +
-                    "<div class='col-sm-1'><input class='text-only' type='text' id='" + hand.number + "-" + i + "-nsscore'></div>" +
-                    "<div class='col-sm-1'><input class='text-only' type='text' id='" + hand.number + "-" + i + "-ewscore'></div>" +
-                    "<button id='" + hand.number + "-" + i + "-submit' type='submit' class='btn btn-primary hidden'>Submit</button>" +
+                    "<div class='col-sm-3'>" +
+                      "<div class='row'>" +
+                        "<div class='col-sm-6'><input class='text-only' type='text' id='" + hand.number + "-" + i + "-nsscore' disabled></div>" +
+                        "<div class='col-sm-6'><input class='text-only' type='text' id='" + hand.number + "-" + i + "-ewscore' disabled></div>" +
+                      "</div>" +
+                    "</div>" +
                   "</form>" +
                 "</div>";
   }
@@ -313,7 +320,7 @@ function isValid(table_hand_id) {
 }
 
 function calculateScore(full_table_hand_id) {
-  var board_number = $("#" + full_table_hand_id + "-board").val();
+  // var board_number = $("#" + full_table_hand_id + "-board").val();
   var ns_number = $("#" + full_table_hand_id + "-ns").val();
   var ew_number = $("#" + full_table_hand_id + "-ew").val();
   var contract = $("#" + full_table_hand_id + "-contract").val().toUpperCase();

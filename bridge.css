@@ -64,16 +64,15 @@
 }
 
 .row {
-  padding-bottom: 10px;
-}
-
-.scoring-element {
-
+  padding-top: 5px;
+  padding-bottom: 5px;
+  margin-left: 0px;
+  width: 100%;
 }
 
 #accordion {
   margin: auto;
-  width: 85%;
+  width: 1250px;
 }
 
 /*body {
@@ -82,7 +81,8 @@
 }*/
 
 html, body, form, fieldset, table, tr, td, img {
-    font: 17px arial,helvetica,sans-serif;
+    font-size: 17px;
+    font-family: arial,helvetica,sans-serif;
 }
 
 input, button, select, textarea, optgroup, option {
