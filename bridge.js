@@ -96,7 +96,7 @@ function addEastWestPair() {
   $("<label id='ew-pair" + nextId + "-label' for='ew-pair" + nextId + "' class='col-sm-2 form-control-label'>Pair " + nextId + "</label>" +
     "<div class='col-sm-10 pair ew-pair' id='ew-pair" + nextId + "'>" +
       "<input type='text' class='form-control' id='pair" + nextId + "-east' placeholder='East' required>" +
-      "<input type='text' class='form-control' id='pair" + nextId + "west' placeholder='West' required>" +
+      "<input type='text' class='form-control' id='pair" + nextId + "-west' placeholder='West' required>" +
     "</div>").insertBefore($("#add-ew-pair-button"));
 }
 
@@ -156,6 +156,9 @@ function createEvent() {
   }
 
   var bridgeEvent = new BridgeEvent(hands);
+  bridgeEvent.ns_pairs = createPairsLookupMap(ns_pairs);
+  bridgeEvent.ew_pairs = createPairsLookupMap(ew_pairs);
+
   thisEvent = bridgeEvent;
   createScoringAccordion(bridgeEvent, ns_pairs, ew_pairs);
 
@@ -168,6 +171,16 @@ function createEvent() {
     // width: '110px',
     width: '100%',
   });
+}
+
+function createPairsLookupMap(pairs) {
+  var pairs_map = {};
+
+  for (var i = 0; i < pairs.length; i++) {
+    pairs_map[pairs[i].number] = pairs[i];
+  }
+
+  return pairs_map;
 }
 
 function createBoards(total_number_of_hands) {
@@ -239,16 +252,16 @@ function createScoringAccordion(bridgeEvent, ns_pairs, ew_pairs) {
           "</h4>" +
         "</div>" +
         "<div id='collapse" + hand_num + "' class='panel-collapse collapse' role='tabpanel' aria-labelledby='heading" + hand_num + "'>" +
-          "<div class='row header'>" +
+          "<div class='row header row-eq-height'>" +
             "<div class='col-sm-1'><span>N/S</span></div>" +
             "<div class='col-sm-2'>E/W</div>" +
             "<div class='col-sm-2'>Contract</div>" +
             "<div class='col-sm-2'>By</div>" +
             "<div class='col-sm-2'>Tricks</div>" +
             "<div class='col-sm-3'>" +
-              "<div class='row'>" +
-                "<div class='col-sm-6'>N/S Score</div>" +
-                "<div class='col-sm-6'>E/W Score</div>" +
+              "<div class='row bottom'>" +
+                "<div class='col-sm-6 no-padding'>N/S Score</div>" +
+                "<div class='col-sm-6 no-padding'>E/W Score</div>" +
               "</div>" +
             "</div>" +
           "</div>" +
@@ -273,7 +286,8 @@ function createScoringForms(hand, ns_pairs, ew_pairs, bridgeEvent) {
   var table_hands = hand.table_hands;
   var content = "";
   for (var i = 0; i < table_hands.length; i++) {
-    content += "<div class='row'>" +
+    var colored_row = (i % 2 == 0) ? " colored-row " : "";
+    content += "<div class='row" + colored_row + "'>" +
                   "<form id='" + hand.number + "-" + i + "-form' action='javascript:void(0);'>" +
                     "<div class='col-sm-1'><input class='text-only' type='text' id='" + hand.number + "-" + i + "-ns' value='" + table_hands[i].ns_pair.number + "' disabled></div>" +
                     "<div class='col-sm-2'>" + createDropdown(hand.number + '-' + i, "-ew", "E/W", ew_pair_numbers, bridgeEvent) + "</div>" +
@@ -338,7 +352,7 @@ function calculateScore(full_table_hand_id) {
   var contract_num_tricks = parseInt(contract.charAt(0));
   var difference_num_tricks = (taken_num_tricks - 6) - contract_num_tricks;
 
-  thisEvent.hands[hand_id].table_hands[table_hand_id].ew_pair = ew_number;
+  thisEvent.hands[hand_id].table_hands[table_hand_id].ew_pair = thisEvent.ew_pairs[ew_number];
 
   if (difference_num_tricks < 0) {
     var vulnerable = isDeclarerVulnerable(declarer, board);
@@ -364,10 +378,12 @@ function calculateScore(full_table_hand_id) {
   if (allTableHandsScored(thisEvent.hands[hand_id].table_hands)) {
     $("#heading" + (hand_id + 1)).removeClass("alert-danger");
     $("#heading" + (hand_id + 1)).addClass("alert-success");
+
+    calculateMatchPointsForHand(thisEvent.hands[hand_id]);
   }
 
   if (allHandsScored()) {
-    console.log("PERFORM FINAL SCORING!");
+    createMatchPointTable();
   }
 }
 
@@ -506,7 +522,6 @@ function getContractPoints(contract_num_tricks, suit, doubled, redoubled) {
     contract_points *= 2;
   }
 
-  console.log("contract points: " + contract_points);
   return contract_points;
 }
 
@@ -533,7 +548,6 @@ function getOvertrickPoints(num_overtricks, suit, vulnerable, doubled, redoubled
     }
   }
 
-  console.log("overtrick points: " + overtrick_points);
   return overtrick_points;
 }
 
@@ -554,7 +568,6 @@ function getSlamBonus(contract_num_tricks, vulnerable) {
     }
   }
 
-  console.log("slam bonus: " + slam_bonus);
   return slam_bonus;
 }
 
@@ -567,7 +580,6 @@ function getDoubledRedoubledBonus(doubled, redoubled) {
     doubled_redoubled_bonus = 50;
   }
 
-  console.log("doubled/redoubled bonus: " + doubled_redoubled_bonus);
   return doubled_redoubled_bonus;
 }
 
@@ -584,7 +596,6 @@ function getGameBonus(contract_points, vulnerable) {
     }
   }
 
-  console.log("game bonus: " + game_bonus);
   return game_bonus;
 }
 
@@ -598,8 +609,6 @@ function setScores(full_table_hand_id, hand_id, table_hand_id, score) {
 }
 
 function allTableHandsScored(table_hands) {
-  console.log(table_hands);
-
   for (var i = 0; i < table_hands.length; i++) {
     if (table_hands[i].ns_score === undefined) {
       return false;
@@ -611,4 +620,90 @@ function allTableHandsScored(table_hands) {
 
 function allHandsScored() {
   return thisEvent.hands.length === $("#accordion div .alert-success").length;
+}
+
+function createMatchPointTable() {
+  console.log("GAME FINISHED, CREATE MATCHPOINT TABLE!");
+}
+
+function calculateMatchPointsForHand(hand) {
+  // hand currently has an array of TableHand objects and a number
+  // each TableHand has a board, ns_pair, ew_pair, ns_score, ew_score
+
+  // want to create a ns_matchpoints and ew_matchpoints map that has the pairnum -> scores in it
+
+  // hand.table_hands[table_hand_id].ns_score
+  // hand.table_hands[table_hand_id].ns_pair
+  // hand.table_hands[table_hand_id].board
+  // hand.table_hands[table_hand_id].ew_score
+  // hand.table_hands[table_hand_id].ew_pair
+
+  // create map
+  var ns_pairs_to_scores = {};
+  for (var i = 0; i < hand.table_hands.length; i++) {
+    ns_pairs_to_scores[hand.table_hands[i].ns_pair.number] = hand.table_hands[i].ns_score;
+  }
+
+  // sort map
+  var sortedPairScoreTuples = sortByValue(ns_pairs_to_scores);
+
+  // assign matchpoints to each pair
+  hand.ns_matchpoints = calculateMatchPoints(sortedPairScoreTuples);
+}
+
+function sortByValue(obj) {
+    var tuples = [];
+
+    for (var key in obj) tuples.push([key, obj[key]]);
+
+    tuples.sort(function(a, b) { return a[1] < b[1] ? 1 : a[1] > b[1] ? -1 : 0 });
+    return tuples;
+}
+
+function calculateMatchPoints(sortedPairScoreTuples) {
+  var matchpoints = {};
+
+  var next_score = (sortedPairScoreTuples.length - 1) * 2; // max mp score
+  for (var i = 0; i < sortedPairScoreTuples.length; i++) {
+    var thisScore = sortedPairScoreTuples[i][1];
+    if (sortedPairScoreTuples[i+1] === undefined) {
+      var nextScore = undefined;
+    } else {
+      var nextScore = sortedPairScoreTuples[i+1][1];
+    }
+
+    if (nextScore === undefined) {
+      matchpoints[sortedPairScoreTuples[i][0]] = next_score;
+    } else {
+      if (thisScore === nextScore) {
+        // tie!
+        var tied_pairs = [];
+        tied_pairs.push(sortedPairScoreTuples[i][0]);
+        tied_pairs.push(sortedPairScoreTuples[i+1][0]);
+
+        var skips = 2;
+        while (true) {
+          if (sortedPairScoreTuples[i+skips] != undefined && thisScore === sortedPairScoreTuples[i+skips][1]) {
+            tied_pairs.push(sortedPairScoreTuples[i+skips][0]);
+            skips++;
+          } else {
+            i += skips - 1; // going to skip one already in the outer loop
+            break;
+          }
+        }
+
+        next_score -= 1; // only score one point instead of two in a tie
+        for (var j = 0; j < tied_pairs.length; j++) {
+          matchpoints[tied_pairs[j]] = next_score;
+        }
+        next_score = (next_score + 1) - (tied_pairs.length * 2);
+      } else {
+        matchpoints[sortedPairScoreTuples[i][0]] = next_score;
+        next_score -= 2;
+      }
+    }
+  }
+
+  console.log(matchpoints);
+  return matchpoints;
 }
