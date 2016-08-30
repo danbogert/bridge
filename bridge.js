@@ -242,6 +242,8 @@ function createTableHands(hand_num, ns_pairs, boards, hands_per_table) {
 }
 
 function createScoringAccordion(bridgeEvent, ns_pairs, ew_pairs) {
+  $("#accordion").empty();
+
   var hands = bridgeEvent.hands;
   for (var hand_num = 1; hand_num <= hands.length; hand_num++) {
     $("#accordion").append(
@@ -380,11 +382,12 @@ function calculateScore(full_table_hand_id) {
     $("#heading" + (hand_id + 1)).addClass("alert-success");
 
     calculateMatchPointsForHand(thisEvent.hands[hand_id]);
-  }
-
-  if (allHandsScored()) {
     createMatchPointTable();
   }
+
+  // if (allHandsScored()) {
+    // createMatchPointTable();
+  // }
 }
 
 function isDeclarerVulnerable(declarer, board) {
@@ -618,37 +621,26 @@ function allTableHandsScored(table_hands) {
   return true;
 }
 
-function allHandsScored() {
-  return thisEvent.hands.length === $("#accordion div .alert-success").length;
-}
-
-function createMatchPointTable() {
-  console.log("GAME FINISHED, CREATE MATCHPOINT TABLE!");
-}
-
 function calculateMatchPointsForHand(hand) {
-  // hand currently has an array of TableHand objects and a number
-  // each TableHand has a board, ns_pair, ew_pair, ns_score, ew_score
-
-  // want to create a ns_matchpoints and ew_matchpoints map that has the pairnum -> scores in it
-
-  // hand.table_hands[table_hand_id].ns_score
-  // hand.table_hands[table_hand_id].ns_pair
-  // hand.table_hands[table_hand_id].board
-  // hand.table_hands[table_hand_id].ew_score
-  // hand.table_hands[table_hand_id].ew_pair
-
-  // create map
+  // create sorted array of tuples
   var ns_pairs_to_scores = {};
   for (var i = 0; i < hand.table_hands.length; i++) {
     ns_pairs_to_scores[hand.table_hands[i].ns_pair.number] = hand.table_hands[i].ns_score;
   }
-
-  // sort map
-  var sortedPairScoreTuples = sortByValue(ns_pairs_to_scores);
+  var sortedNsPairScoreTuples = sortByValue(ns_pairs_to_scores);
 
   // assign matchpoints to each pair
-  hand.ns_matchpoints = calculateMatchPoints(sortedPairScoreTuples);
+  hand.ns_matchpoints = calculateMatchPoints(sortedNsPairScoreTuples);
+
+
+  var ew_pairs_to_scores = {};
+  for (var i = 0; i < hand.table_hands.length; i++) {
+    ew_pairs_to_scores[hand.table_hands[i].ew_pair.number] = hand.table_hands[i].ew_score;
+  }
+  var sortedEwPairScoreTuples = sortByValue(ew_pairs_to_scores);
+
+  // assign matchpoints to each pair
+  hand.ew_matchpoints = calculateMatchPoints(sortedEwPairScoreTuples);
 }
 
 function sortByValue(obj) {
@@ -706,4 +698,41 @@ function calculateMatchPoints(sortedPairScoreTuples) {
 
   console.log(matchpoints);
   return matchpoints;
+}
+
+function allHandsScored() {
+  return thisEvent.hands.length === $("#accordion div .alert-success").length;
+}
+
+function createMatchPointTable() {
+  var high_score = (thisEvent.hands[0].table_hands.length - 1) * 2;
+  var best_possible_score = high_score * thisEvent.hands.length;
+
+  var matchpoint_table = "<table><tr><th>Pair</th>";
+  for (var i = 1; i <= thisEvent.hands.length; i++) {
+    matchpoint_table += "<th>" + i + "</th>";
+  }
+  matchpoint_table += "<th>Total</th><th>%</th><th>Name</th></tr>";
+
+  for (var pair = 1; pair <= thisEvent.hands[0].table_hands.length; pair++) {
+    matchpoint_table += "<tr><td>" + pair + "</td>";
+    var total_matchpoints = 0;
+    for (var hand_index = 0; hand_index < thisEvent.hands.length; hand_index++) {
+      var hand = thisEvent.hands[hand_index];
+      if (hand.ns_matchpoints === undefined) {
+        matchpoint_table += "<td>0</td>";
+        continue;
+      }
+      var hand_matchpoints = hand.ns_matchpoints[pair];
+      total_matchpoints += hand_matchpoints;
+      matchpoint_table += "<td>" + hand_matchpoints + "</td>";
+    }
+
+    matchpoint_table += "<td>" + total_matchpoints + "</td><td>" + ((total_matchpoints / best_possible_score) * 100) + "%</td><td>" + thisEvent.ns_pairs[pair].north + " & " + thisEvent.ns_pairs[pair].south + "</td></tr>";
+  }
+
+  matchpoint_table += "</table>";
+
+  $("#final_scores_table").empty();
+  $("#final_scores_table").append(matchpoint_table);
 }
