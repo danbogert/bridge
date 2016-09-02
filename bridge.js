@@ -168,7 +168,6 @@ function createEvent() {
 
   $('.selectpicker').selectpicker({
     style: 'btn-default',
-    // width: '110px',
     width: '100%',
   });
 }
@@ -281,10 +280,6 @@ function createScoringForms(hand, ns_pairs, ew_pairs, bridgeEvent) {
     ew_pair_numbers.push(i);
   }
 
-  if (ns_pairs.length != ew_pairs.length) {
-    ew_pair_numbers.push("Skip");
-  }
-
   var table_hands = hand.table_hands;
   var content = "";
   for (var i = 0; i < table_hands.length; i++) {
@@ -382,7 +377,13 @@ function calculateScore(full_table_hand_id) {
     $("#heading" + (hand_id + 1)).addClass("alert-success");
 
     calculateMatchPointsForHand(thisEvent.hands[hand_id]);
-    createMatchPointTable();
+    var ns_matchpoint_table = createMatchPointTable(true);
+    var ew_matchpoint_table = createMatchPointTable(false);
+
+    console.log(ns_matchpoint_table);
+
+    $("#final_score_tables_div").empty();
+    $("#final_score_tables_div").append("<p>" + ns_matchpoint_table + "</p><p>" + ew_matchpoint_table + "</p>");
   }
 
   // if (allHandsScored()) {
@@ -704,35 +705,43 @@ function allHandsScored() {
   return thisEvent.hands.length === $("#accordion div .alert-success").length;
 }
 
-function createMatchPointTable() {
-  var high_score = (thisEvent.hands[0].table_hands.length - 1) * 2;
-  var best_possible_score = high_score * thisEvent.hands.length;
+function createMatchPointTable(ns) {
+  var num_pairs = ns ? Object.keys(thisEvent.ns_pairs).length : Object.keys(thisEvent.ew_pairs).length;
+  var single_hand_high_score = (thisEvent.hands[0].table_hands.length - 1) * 2;
+  var best_possible_score = single_hand_high_score * thisEvent.hands.length;
 
-  var matchpoint_table = "<table><tr><th>Pair</th>";
+  var matchpoint_table = "<table><tr class='border-bottom'><th class='small-fixed-col'>Pair</th>";
   for (var i = 1; i <= thisEvent.hands.length; i++) {
     matchpoint_table += "<th>" + i + "</th>";
   }
-  matchpoint_table += "<th>Total</th><th>%</th><th>Name</th></tr>";
+  matchpoint_table += "<th class='small-fixed-col'>Total</th><th class='med-fixed-col'>%</th><th class='large-fixed-col'>Name</th></tr>";
 
-  for (var pair = 1; pair <= thisEvent.hands[0].table_hands.length; pair++) {
-    matchpoint_table += "<tr><td>" + pair + "</td>";
+  for (var pair = 1; pair <= num_pairs; pair++) {
+    matchpoint_table += "<tr><td class='black-border-right'>" + pair + "</td>";
+
     var total_matchpoints = 0;
     for (var hand_index = 0; hand_index < thisEvent.hands.length; hand_index++) {
+      // if scores not entered for this hand yet, just put an empty space
       var hand = thisEvent.hands[hand_index];
-      if (hand.ns_matchpoints === undefined) {
-        matchpoint_table += "<td>0</td>";
+      if ((ns && hand.ns_matchpoints === undefined) || (!ns && hand.ew_matchpoints === undefined))  {
+        matchpoint_table += "<td> </td>";
         continue;
       }
-      var hand_matchpoints = hand.ns_matchpoints[pair];
+
+      // if this pair skipped this hand, put a hyphen
+      var hand_matchpoints = ns ? hand.ns_matchpoints[pair] : hand.ew_matchpoints[pair];
+      if (hand_matchpoints === undefined) {
+        matchpoint_table += "<td>-</td>";
+        continue;
+      }
+
       total_matchpoints += hand_matchpoints;
       matchpoint_table += "<td>" + hand_matchpoints + "</td>";
     }
 
-    matchpoint_table += "<td>" + total_matchpoints + "</td><td>" + ((total_matchpoints / best_possible_score) * 100) + "%</td><td>" + thisEvent.ns_pairs[pair].north + " & " + thisEvent.ns_pairs[pair].south + "</td></tr>";
+    var names = ns ? (thisEvent.ns_pairs[pair].north + " & " + thisEvent.ns_pairs[pair].south) : (thisEvent.ew_pairs[pair].east + " & " + thisEvent.ew_pairs[pair].west);
+    matchpoint_table += "<td class='black-border-sides'>" + total_matchpoints + "</td><td class='black-border-right'>" + ((total_matchpoints / best_possible_score) * 100).toFixed(2) + "%</td><td>" + names + "</td></tr>";
   }
 
-  matchpoint_table += "</table>";
-
-  $("#final_scores_table").empty();
-  $("#final_scores_table").append(matchpoint_table);
+  return matchpoint_table += "</table>";
 }

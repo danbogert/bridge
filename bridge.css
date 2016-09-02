@@ -95,6 +95,54 @@
   width: 1250px;
 }
 
+.score-table {
+  height: 100vh;
+  position: relative;
+  top: 50%;
+}
+
+tr.border-bottom th {
+  border-bottom: 2px solid black;
+  text-align: center;
+}
+
+.black-border-right {
+  border-right: 1px solid black;
+}
+
+.black-border-sides {
+  border-right: 1px solid black;
+  border-left: 1px solid black;
+}
+
+table {
+  border-collapse: separate;
+  table-layout: fixed;
+  width: 100%;
+}
+
+td {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  text-align: center;
+}
+
+tr:nth-child(even) {
+  background-color: whitesmoke;
+}
+
+.small-fixed-col {
+  width: 50px;
+}
+
+.med-fixed-col {
+  width: 70px;
+}
+
+.large-fixed-col {
+  width: 200px;
+}
+
 /*body {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 18px;
@@ -115,10 +163,6 @@ input, button, select, textarea, optgroup, option {
 /* rest of your styles; like: */
 body {
     font-size: 17px;
-}
-
-table {
-  width: 100%;
 }
 
 /*input:invalid {
