@@ -379,11 +379,14 @@ function calculateScore(full_table_hand_id) {
     calculateMatchPointsForHand(thisEvent.hands[hand_id]);
     var ns_matchpoint_table = createMatchPointTable(true);
     var ew_matchpoint_table = createMatchPointTable(false);
-
-    console.log(ns_matchpoint_table);
+    var ns_rankings_table = createRankingTable(true);
+    var ew_rankings_table = createRankingTable(false);
 
     $("#final_score_tables_div").empty();
-    $("#final_score_tables_div").append("<p>" + ns_matchpoint_table + "</p><p>" + ew_matchpoint_table + "</p>");
+    $("#final_score_tables_div").append("<div><h3 class='bold'>North/South Scores</h3>" + ns_matchpoint_table + "</div>");
+    $("#final_score_tables_div").append("<div><h3 class='bold'>East/West Scores</h3>" + ew_matchpoint_table + "</div>");
+    $("#final_score_tables_div").append("<div class='side-by-side'><h3 class='bold'>North/South Ranking</h3>" + ns_rankings_table + "</div>");
+    $("#final_score_tables_div").append("<div class='side-by-side right'><h3 class='bold'>East/West Ranking</h3>" + ew_rankings_table + "</div>");
   }
 
   // if (allHandsScored()) {
@@ -697,7 +700,6 @@ function calculateMatchPoints(sortedPairScoreTuples) {
     }
   }
 
-  console.log(matchpoints);
   return matchpoints;
 }
 
@@ -744,4 +746,46 @@ function createMatchPointTable(ns) {
   }
 
   return matchpoint_table += "</table>";
+}
+
+function createRankingTable(ns) {
+  var num_pairs = ns ? Object.keys(thisEvent.ns_pairs).length : Object.keys(thisEvent.ew_pairs).length;
+  var single_hand_high_score = (thisEvent.hands[0].table_hands.length - 1) * 2;
+  var best_possible_score = single_hand_high_score * thisEvent.hands.length;
+  var final_scores = {};
+
+  for (var pair = 1; pair <= num_pairs; pair++) {
+
+    var total_matchpoints = 0;
+    for (var hand_index = 0; hand_index < thisEvent.hands.length; hand_index++) {
+      // if scores not entered for this hand yet, no score
+      var hand = thisEvent.hands[hand_index];
+      if ((ns && hand.ns_matchpoints === undefined) || (!ns && hand.ew_matchpoints === undefined))  {
+        continue;
+      }
+
+      // if this pair skipped this hand, no score
+      var hand_matchpoints = ns ? hand.ns_matchpoints[pair] : hand.ew_matchpoints[pair];
+      if (hand_matchpoints === undefined) {
+        continue;
+      }
+
+      total_matchpoints += hand_matchpoints;
+    }
+
+    final_scores[pair] = (total_matchpoints / best_possible_score) * 100;
+  }
+
+  var final_scores_sorted = sortByValue(final_scores);
+  var rankings_table = "<table>";
+  for (var i = 0; i < final_scores_sorted.length; i++) {
+    var pair_num = final_scores_sorted[i][0];
+    var score = final_scores_sorted[i][1].toFixed(2);
+    var names = ns ? (thisEvent.ns_pairs[pair_num].north + " & " + thisEvent.ns_pairs[pair_num].south) : (thisEvent.ew_pairs[pair_num].east + " & " + thisEvent.ew_pairs[pair_num].west);
+
+    rankings_table += "<tr><td class='small-fixed-col black-border-right'>" + (i + 1) + "</td><td class='med-fixed-col'>" + score + "%</td><td>" + pair_num + " / " + names + "</td></tr>";
+  }
+  rankings_table += "</table>";
+
+  return rankings_table;
 }
