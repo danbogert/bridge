@@ -387,11 +387,18 @@ function calculateScore(full_table_hand_id) {
     $("#final_score_tables_div").append("<div><h3 class='bold'>East/West Scores</h3>" + ew_matchpoint_table + "</div>");
     $("#final_score_tables_div").append("<div class='side-by-side'><h3 class='bold'>North/South Ranking</h3>" + ns_rankings_table + "</div>");
     $("#final_score_tables_div").append("<div class='side-by-side right'><h3 class='bold'>East/West Ranking</h3>" + ew_rankings_table + "</div>");
-  }
 
-  // if (allHandsScored()) {
-    // createMatchPointTable();
-  // }
+    $("#print-scores-button").removeClass("hidden");
+
+    $('#print-scores-button').on('click', function () {
+      var print_window_popup = window.open('', "Bridge", "status=0,titlebar=0,toolbar=0,menubar=0,location=0,height=700,width=1350");
+      $('<link rel="stylesheet" href="file:///home/user/source/bridge/bridge.css" />').appendTo(print_window_popup.document.body); // TODO: can't hard-code the css file like this here
+      $("#final_score_tables_div").clone().appendTo(print_window_popup.document.body);
+      sleep(500).then(() => {
+        print_window_popup.print();
+      });
+    });
+  }
 }
 
 function isDeclarerVulnerable(declarer, board) {
@@ -788,4 +795,8 @@ function createRankingTable(ns) {
   rankings_table += "</table>";
 
   return rankings_table;
+}
+
+function sleep(time) {
+  return new Promise((resolve) => setTimeout(resolve, time));
 }

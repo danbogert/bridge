@@ -95,10 +95,17 @@
   width: 1250px;
 }
 
+.centered-btn {
+  margin: 0 auto;
+  display: block;
+}
+
 .score-table {
-  height: 100vh;
   position: relative;
-  top: 50%;
+}
+
+.hidden {
+  display: none;
 }
 
 tr.border-bottom th {
@@ -116,7 +123,7 @@ tr.border-bottom th {
 }
 
 table {
-  border-collapse: separate;
+  border-collapse: collapse;
   table-layout: fixed;
   width: 100%;
 }
