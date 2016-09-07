@@ -159,10 +159,14 @@ tr:nth-child(even) {
   float: right;
 }
 
-/*body {
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 18px;
-}*/
+html {
+  height: 100%;
+  background: url(images/london.jpg) no-repeat center center fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+}
 
 html, body, form, fieldset, table, tr, td, img {
     font-size: 17px;
@@ -189,10 +193,15 @@ input:valid {
   border: 2px solid green;
 }*/
 
+#scores-well {
+  padding: 10px;
+  background: white;
+}
 
-
-
-
+#final_score_tables_div {
+  width: 100%;
+  background: white;
+}
 
 
 
@@ -201,23 +210,25 @@ input:valid {
 /* Custom default button */
 /*.btn-default,
 .btn-default:hover,
-.btn-default:focus {*/
-.mybtn {
+.btn-default:focus {
   color: #333;
   text-shadow: none;
   background-color: #fff;
   border: 1px solid #fff;
-}
+}*/
 
 
-/*
- * Base structure
- */
 
-html,
+
+/*html,
 body {
   height: 100%;
   background-color: #333;
+}*/
+
+body {
+  height: 100%;
+  background: none;
 }
 
 #cover-page {
@@ -233,8 +244,8 @@ body {
   width: 100%;
   height: 100%; /* For at least Firefox */
   min-height: 100%;
-  -webkit-box-shadow: inset 0 0 100px rgba(0,0,0,.5);
-          box-shadow: inset 0 0 100px rgba(0,0,0,.5);
+  -webkit-box-shadow: inset 0 0 100px rgba(0,0,0,1);
+          box-shadow: inset 0 0 100px rgba(0,0,0,1);
 }
 .site-wrapper-inner {
   display: table-cell;

@@ -390,7 +390,7 @@ function calculateScore(full_table_hand_id) {
     $("#final_score_tables_div").append("<div class='side-by-side'><h3 class='bold'>North/South Ranking</h3>" + ns_rankings_table + "</div>");
     $("#final_score_tables_div").append("<div class='side-by-side right'><h3 class='bold'>East/West Ranking</h3>" + ew_rankings_table + "</div>");
 
-    $("#print-scores-button").removeClass("hidden");
+    $("#scores-well").removeClass("hidden");
 
     $('#print-scores-button').on('click', function () {
       var print_window_popup = window.open('', "Bridge", "status=0,titlebar=0,toolbar=0,menubar=0,location=0,height=700,width=1350");

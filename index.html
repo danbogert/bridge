@@ -155,13 +155,15 @@
 
     <div id="accordion" class="centered panel-group" role="tablist" aria-multiselectable="true"></div>
 
-    <div id="final_score_tables_div" class="score-table centered"></div>
-    <!-- $("html, body").animate({scrollTop: $("#final_score_tables").offset().top}, 2000); -->
-
-    <div class="centered">
-      <button id="print-scores-button" type="button" class="btn btn-primary btn-lg hidden centered-btn">
-        <span class="glyphicon glyphicon-print" aria-hidden="true"></span>  Print Scores
-      </button>
+    <div id="scores-well" class="well centered hidden">
+      <div id="final_score_tables_div" class="score-table centered"></div>
+      <!-- $("html, body").animate({scrollTop: $("#final_score_tables").offset().top}, 2000); -->
+      <div class="centered">
+        <button id="print-scores-button" type="button" class="btn btn-default btn-lg centered-btn">
+          <span class="glyphicon glyphicon-print" aria-hidden="true"></span>  Print Scores
+        </button>
+      </div>
     </div>
+
   </body>
 </html>
