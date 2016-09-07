@@ -170,6 +170,8 @@ function createEvent() {
     style: 'btn-default',
     width: '100%',
   });
+
+  $("#cover-page").hide();
 }
 
 function createPairsLookupMap(pairs) {
