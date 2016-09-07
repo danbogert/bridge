@@ -172,6 +172,7 @@ function createEvent() {
   });
 
   $("#cover-page").hide();
+  $("#masthead").removeClass("hidden");
 }
 
 function createPairsLookupMap(pairs) {
