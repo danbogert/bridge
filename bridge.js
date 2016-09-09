@@ -291,7 +291,7 @@ function createScoringForms(hand, ns_pairs, ew_pairs, bridgeEvent) {
                   "<form id='" + hand.number + "-" + i + "-form' action='javascript:void(0);'>" +
                     "<div class='col-sm-1'><input class='text-only' type='text' id='" + hand.number + "-" + i + "-ns' value='" + table_hands[i].ns_pair.number + "' disabled></div>" +
                     "<div class='col-sm-2'>" + createDropdown(hand.number + '-' + i, "-ew", "E/W", ew_pair_numbers, bridgeEvent) + "</div>" +
-                    "<div class='col-sm-2'><input type='text' pattern='^[1-7][SsDdCcHhNn]([Xx])?([Xx])?$' class='form-control uppercase' id='" + hand.number + "-" + i + "-contract'  oninput='isRowComplete(\"" + hand.number + "-" + i + "\")' required></div>" +
+                    "<div class='col-sm-2'><input type='text' pattern='^[1-7]([Ss]|[Dd]|[Cc]|[Hh]|([Nn]([Tt])?))([Xx])?([Xx])?$' class='form-control uppercase' id='" + hand.number + "-" + i + "-contract'  oninput='isRowComplete(\"" + hand.number + "-" + i + "\")' required></div>" +
                     "<div class='col-sm-2'>" + createDropdown(hand.number + '-' + i, "-by", "By", ["North", "South", "East", "West"], bridgeEvent) + "</div>" +
                     "<div class='col-sm-2'>" + createDropdown(hand.number + '-' + i, "-tricks", "Contract", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], bridgeEvent) + "</div>" +
                     "<div class='col-sm-3'>" +
