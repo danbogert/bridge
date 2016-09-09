@@ -334,7 +334,6 @@ function isValid(table_hand_id) {
 }
 
 function calculateScore(full_table_hand_id) {
-  // var board_number = $("#" + full_table_hand_id + "-board").val();
   var ns_number = $("#" + full_table_hand_id + "-ns").val();
   var ew_number = $("#" + full_table_hand_id + "-ew").val();
   var contract = $("#" + full_table_hand_id + "-contract").val().toUpperCase();
@@ -618,11 +617,17 @@ function getGameBonus(contract_points, vulnerable) {
 
 // Pass the score for ns
 function setScores(full_table_hand_id, hand_id, table_hand_id, score) {
-  $("#" + full_table_hand_id + "-nsscore").val(score);
   thisEvent.hands[hand_id].table_hands[table_hand_id].ns_score = score;
-
-  $("#" + full_table_hand_id + "-ewscore").val(score * -1);
   thisEvent.hands[hand_id].table_hands[table_hand_id].ew_score = score * -1;
+
+  // Only show the positive score, clear the other
+  if (score > 0) {
+    $("#" + full_table_hand_id + "-nsscore").val(score);
+    $("#" + full_table_hand_id + "-ewscore").val("");
+  } else {
+    $("#" + full_table_hand_id + "-nsscore").val("");
+    $("#" + full_table_hand_id + "-ewscore").val(score * -1);
+  }
 }
 
 function allTableHandsScored(table_hands) {
