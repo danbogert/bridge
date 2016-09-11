@@ -79,7 +79,7 @@ $(function() {
   $("#add-ew-pair-button").click(addEastWestPair);
   $("#cancel-event-button").click(cancelEventCreation);
   $("#create-event-button").click(createEvent);
-
+  $('#print-scores-button').click(printScores);
 });
 
 function addNorthSouthPair() {
@@ -391,17 +391,6 @@ function calculateScore(full_table_hand_id) {
     $("#final_score_tables_div").append("<div class='side-by-side right'><h3 class='bold'>East/West Ranking</h3>" + ew_rankings_table + "</div>");
 
     $("#scores-well").removeClass("hidden");
-
-    $('#print-scores-button').on('click', function () {
-      var print_window = window.open('','printwindow');
-      print_window.document.write('<html><head><title>Bridge</title><link rel="stylesheet" type="text/css" href="stylesheets/print.css" /></head><body>');
-      print_window.document.write($("#final_score_tables_div").html());
-      print_window.document.write('</body></html>');
-      sleep(1000).then(() => {
-        print_window.print();
-        // print_window.close();
-      });
-    });
   }
 }
 
@@ -805,6 +794,17 @@ function createRankingTable(ns) {
   rankings_table += "</table>";
 
   return rankings_table;
+}
+
+function printScores() {
+  var print_window = window.open('','printwindow');
+  print_window.document.write('<html><head><title>Bridge</title><link rel="stylesheet" type="text/css" href="stylesheets/print.css" /></head><body>');
+  print_window.document.write($("#final_score_tables_div").html());
+  print_window.document.write('</body></html>');
+  sleep(1000).then(() => {
+    print_window.print();
+    print_window.close();
+  });
 }
 
 function sleep(time) {
