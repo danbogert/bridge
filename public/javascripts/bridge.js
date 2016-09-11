@@ -399,7 +399,7 @@ function calculateScore(full_table_hand_id) {
       print_window.document.write('</body></html>');
       sleep(1000).then(() => {
         print_window.print();
-        print_window.close();
+        // print_window.close();
       });
     });
   }
