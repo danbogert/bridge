@@ -393,11 +393,13 @@ function calculateScore(full_table_hand_id) {
     $("#scores-well").removeClass("hidden");
 
     $('#print-scores-button').on('click', function () {
-      var print_window_popup = window.open('', "Bridge", "status=0,titlebar=0,toolbar=0,menubar=0,location=0,height=700,width=1350");
-      $('<link rel="stylesheet" href="file:///home/user/source/bridge/bridge.css" />').appendTo(print_window_popup.document.body); // TODO: can't hard-code the css file like this here
-      $("#final_score_tables_div").clone().appendTo(print_window_popup.document.body);
-      sleep(500).then(() => {
-        print_window_popup.print();
+      var print_window = window.open('','printwindow');
+      print_window.document.write('<html><head><title>Bridge</title><link rel="stylesheet" type="text/css" href="stylesheets/print.css" /></head><body>');
+      print_window.document.write($("#final_score_tables_div").html());
+      print_window.document.write('</body></html>');
+      sleep(1000).then(() => {
+        print_window.print();
+        print_window.close();
       });
     });
   }

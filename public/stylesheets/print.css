@@ -1,0 +1,75 @@
+.centered {
+  margin: auto;
+  width: 1250px;
+}
+
+tr.border-bottom th {
+  border-bottom: 2px solid black;
+  text-align: center;
+}
+
+.black-border-right {
+  border-right: 1px solid black;
+}
+
+.black-border-sides {
+  border-right: 1px solid black;
+  border-left: 1px solid black;
+}
+
+table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+}
+
+td {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  text-align: center;
+}
+
+tr:nth-child(even) {
+  background-color: whitesmoke;
+}
+
+.small-fixed-col {
+  width: 50px;
+}
+
+.med-fixed-col {
+  width: 70px;
+}
+
+.large-fixed-col {
+  width: 200px;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.side-by-side {
+  width: 45%;
+  display: inline-block;
+}
+
+.right {
+  float: right;
+}
+
+#scores-well {
+  padding: 10px;
+  background: white;
+}
+
+#final_score_tables_div {
+  width: 100%;
+  background: white;
+}
+
+body {
+  font-size: 17px;
+  height: 95%;
+  background: none;
+}
