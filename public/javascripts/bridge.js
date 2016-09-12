@@ -101,16 +101,18 @@ function addEastWestPair() {
 }
 
 function cancelEventCreation() {
+  $(".nav li a").blur();
+
   <!-- Remove Extra North South Pairs -->
   var number_ns_pairs = $(".ns-pair").length;
-  for (i = 2; i <= number_ns_pairs; i++) {
+  for (var i = 2; i <= number_ns_pairs; i++) {
     $("#ns-pair" + i + "-label").remove();
     $("#ns-pair" + i).remove();
   }
 
   <!-- Remove Extra East West Pairs -->
+  for (var i = 2; i <= number_ew_pairs; i++) {
   var number_ew_pairs = $(".ew-pair").length;
-  for (i = 2; i <= number_ew_pairs; i++) {
     $("#ew-pair" + i + "-label").remove();
     $("#ew-pair" + i).remove();
   }
@@ -127,6 +129,7 @@ function cancelEventCreation() {
 
 function createEvent() {
   $("#myModal").modal('toggle');
+  $(".nav li a").blur();
 
   var ns_pairs = [];
   var number_ns_pairs = $(".ns-pair").length;
@@ -293,7 +296,7 @@ function createScoringForms(hand, ns_pairs, ew_pairs, bridgeEvent) {
                     "<div class='col-sm-2'>" + createDropdown(hand.number + '-' + i, "-ew", "E/W", ew_pair_numbers, bridgeEvent) + "</div>" +
                     "<div class='col-sm-2'><input type='text' pattern='^[1-7]([Ss]|[Dd]|[Cc]|[Hh]|([Nn]([Tt])?))([Xx])?([Xx])?$' class='form-control uppercase' id='" + hand.number + "-" + i + "-contract'  oninput='isRowComplete(\"" + hand.number + "-" + i + "\")' required></div>" +
                     "<div class='col-sm-2'>" + createDropdown(hand.number + '-' + i, "-by", "By", ["North", "South", "East", "West"], bridgeEvent) + "</div>" +
-                    "<div class='col-sm-2'>" + createDropdown(hand.number + '-' + i, "-tricks", "Contract", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], bridgeEvent) + "</div>" +
+                    "<div class='col-sm-2'>" + createDropdown(hand.number + '-' + i, "-tricks", "Tricks", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], bridgeEvent) + "</div>" +
                     "<div class='col-sm-3'>" +
                       "<div class='row'>" +
                         "<div class='col-sm-6'><input class='text-only' type='text' id='" + hand.number + "-" + i + "-nsscore' disabled></div>" +

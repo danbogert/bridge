@@ -54,6 +54,10 @@
   font-weight: bold;
 }
 
+.header>div {
+  font-size: 22px;
+}
+
 .hidden {
   display: none;
 }
@@ -287,21 +291,32 @@ body {
 .blog-nav {
   display: inline-block;
   float: right;
-  padding: 3px;
+}
+
+.left {
+  float: left;
+}
+
+.nav>li>a {
+  color: grey;
+  font-size: 25px;
+}
+
+.nav>li>a:hover {
+  color: white;
+  background-color: #222;
+}
+
+.nav>li>a:focus {
+  background-color: transparent;
+  outline: none;
 }
 
 .masthead-title {
-  width: 400px;
-  display: inline-block;
-}
-
-.masthead-title > p {
-  display: table-cell;
-  height: 52px;
   vertical-align: middle;
-  color: white;
+  color: white !important;
   font-weight: bold;
-  font-size: 40px;
+  font-size: 45px !important;
   font-style: oblique;
   font-family: sans-serif;
 }

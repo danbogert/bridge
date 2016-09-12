@@ -155,17 +155,18 @@
 
     <div id="masthead" class="blog-masthead hidden">
       <div class="container">
-        <div class="masthead-title">
-          <p>Bridge</p>
+        <div class="collapse navbar-collapse blog-nav left">
+          <ul class="nav navbar-nav">
+            <li><a class="masthead-title" href="#">Bridge</a></li>
+          </ul>
         </div>
-        <nav class="blog-nav">
-          <button type="button" class="btn btn-default btn-lg masthead-btn" data-toggle="modal" data-target="#myModal">
-            New Game
-          </button>
-          <button type="button" class="btn btn-default btn-lg masthead-btn" data-toggle="modal" data-target="#myModal">
-            History
-          </button>
-        </nav>
+
+        <div class="collapse navbar-collapse blog-nav">
+          <ul class="nav navbar-nav">
+            <li><a href="#" data-toggle="modal" data-target="#myModal">New Game</a></li>
+            <!-- <li><a href="#">History</a></li> -->
+          </ul>
+        </div>
       </div>
     </div>
 
