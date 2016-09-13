@@ -69,25 +69,39 @@ var Suit = {
 var thisEvent;
 
 $(function() {
+  $("#masthead").hide();
+
   $('#date').datepicker();
 
   $(".dropdown-menu li a").click(function() {
     $(this).parents(".dropdown").find('.btn').html($(this).text() + ' <span class="caret"></span>');
   });
 
+  $("#title_link").click(showCoverPage);
   $("#add-ns-pair-button").click(addNorthSouthPair);
   $("#add-ew-pair-button").click(addEastWestPair);
-  $("#cancel-event-button").click(cancelEventCreation);
+  $("#cancel-event-button").click(cleanNewEventModal);
   $("#create-event-button").click(createEvent);
   $('#print-scores-button').click(printScores);
 });
+
+function showCoverPage() {
+  $("#masthead").slideUp(1000, "linear");
+  $("#accordion").fadeOut(1000, "linear");
+  $("#scores-well").fadeOut(1000, "linear");
+  sleep(1000).then(() => {
+    $("#accordion").empty();
+    $("#accordion").show();
+    $("#cover-page").show();
+  });
+}
 
 function addNorthSouthPair() {
   var nextId = $(".ns-pair").length + 1;
   $("<label id='ns-pair" + nextId + "-label' for='ns-pair" + nextId + "' class='col-sm-2 form-control-label'>Pair " + nextId + "</label>" +
     "<div class='col-sm-10 pair ns-pair' id='ns-pair" + nextId + "'>" +
-      "<input type='text' class='form-control' id='pair" + nextId + "-north' placeholder='North' required>" +
-      "<input type='text' class='form-control' id='pair" + nextId + "-south' placeholder='South' required>" +
+      "<input type='text' class='form-control' id='pair" + nextId + "-north' placeholder='North " + nextId + "' required>" +
+      "<input type='text' class='form-control' id='pair" + nextId + "-south' placeholder='South " + nextId + "' required>" +
     "</div>").insertBefore($("#add-ns-pair-button"));
 }
 
@@ -95,12 +109,12 @@ function addEastWestPair() {
   var nextId = $(".ew-pair").length + 1;
   $("<label id='ew-pair" + nextId + "-label' for='ew-pair" + nextId + "' class='col-sm-2 form-control-label'>Pair " + nextId + "</label>" +
     "<div class='col-sm-10 pair ew-pair' id='ew-pair" + nextId + "'>" +
-      "<input type='text' class='form-control' id='pair" + nextId + "-east' placeholder='East' required>" +
-      "<input type='text' class='form-control' id='pair" + nextId + "-west' placeholder='West' required>" +
+      "<input type='text' class='form-control' id='pair" + nextId + "-east' placeholder='East " + nextId + "' required>" +
+      "<input type='text' class='form-control' id='pair" + nextId + "-west' placeholder='West " + nextId + "' required>" +
     "</div>").insertBefore($("#add-ew-pair-button"));
 }
 
-function cancelEventCreation() {
+function cleanNewEventModal() {
   $(".nav li a").blur();
 
   <!-- Remove Extra North South Pairs -->
@@ -111,8 +125,8 @@ function cancelEventCreation() {
   }
 
   <!-- Remove Extra East West Pairs -->
-  for (var i = 2; i <= number_ew_pairs; i++) {
   var number_ew_pairs = $(".ew-pair").length;
+  for (var i = 2; i <= number_ew_pairs; i++) {
     $("#ew-pair" + i + "-label").remove();
     $("#ew-pair" + i).remove();
   }
@@ -175,7 +189,9 @@ function createEvent() {
   });
 
   $("#cover-page").hide();
-  $("#masthead").removeClass("hidden");
+  $("#masthead").show();
+
+  cleanNewEventModal();
 }
 
 function createPairsLookupMap(pairs) {
@@ -388,10 +404,10 @@ function calculateScore(full_table_hand_id) {
     var ew_rankings_table = createRankingTable(false);
 
     $("#final_score_tables_div").empty();
-    $("#final_score_tables_div").append("<div><h3 class='bold'>North/South Scores</h3>" + ns_matchpoint_table + "</div>");
-    $("#final_score_tables_div").append("<div><h3 class='bold'>East/West Scores</h3>" + ew_matchpoint_table + "</div>");
-    $("#final_score_tables_div").append("<div class='side-by-side'><h3 class='bold'>North/South Ranking</h3>" + ns_rankings_table + "</div>");
-    $("#final_score_tables_div").append("<div class='side-by-side right'><h3 class='bold'>East/West Ranking</h3>" + ew_rankings_table + "</div>");
+    $("#final_score_tables_div").append("<div class='scoring-div'><h3 class='bold'>North/South Scores</h3>" + ns_matchpoint_table + "</div>");
+    $("#final_score_tables_div").append("<div class='scoring-div'><h3 class='bold'>East/West Scores</h3>" + ew_matchpoint_table + "</div>");
+    $("#final_score_tables_div").append("<div class='scoring-div side-by-side'><h3 class='bold'>North/South Ranking</h3>" + ns_rankings_table + "</div>");
+    $("#final_score_tables_div").append("<div class='scoring-div side-by-side right'><h3 class='bold'>East/West Ranking</h3>" + ew_rankings_table + "</div>");
 
     $("#scores-well").removeClass("hidden");
   }
@@ -721,14 +737,18 @@ function createMatchPointTable(ns) {
   var single_hand_high_score = (thisEvent.hands[0].table_hands.length - 1) * 2;
   var best_possible_score = single_hand_high_score * thisEvent.hands.length;
 
-  var matchpoint_table = "<table><tr class='border-bottom'><th class='small-fixed-col'>Pair</th>";
+  var matchpoint_table = "<table><tr class='thick-border-bottom'><th class='small-fixed-col'>Pair</th>";
   for (var i = 1; i <= thisEvent.hands.length; i++) {
     matchpoint_table += "<th>" + i + "</th>";
   }
   matchpoint_table += "<th class='small-fixed-col'>Total</th><th class='med-fixed-col'>%</th><th class='large-fixed-col'>Name</th></tr>";
 
   for (var pair = 1; pair <= num_pairs; pair++) {
-    matchpoint_table += "<tr><td class='black-border-right'>" + pair + "</td>";
+    var border_bottom = "";
+    if (pair === num_pairs) {
+      border_bottom = " class='border-bottom'";
+    }
+    matchpoint_table += "<tr" + border_bottom + "><td class='black-border-right'>" + pair + "</td>";
 
     var total_matchpoints = 0;
     for (var hand_index = 0; hand_index < thisEvent.hands.length; hand_index++) {
@@ -786,13 +806,18 @@ function createRankingTable(ns) {
   }
 
   var final_scores_sorted = sortByValue(final_scores);
-  var rankings_table = "<table>";
+  var rankings_table = "<table><tr class='thick-border-bottom'><th class='small-fixed-col'>Rank</th><th class='med-fixed-col'>%</th><th>Pair</th></tr>";
+
   for (var i = 0; i < final_scores_sorted.length; i++) {
     var pair_num = final_scores_sorted[i][0];
     var score = final_scores_sorted[i][1].toFixed(2);
     var names = ns ? (thisEvent.ns_pairs[pair_num].north + " & " + thisEvent.ns_pairs[pair_num].south) : (thisEvent.ew_pairs[pair_num].east + " & " + thisEvent.ew_pairs[pair_num].west);
 
-    rankings_table += "<tr><td class='small-fixed-col black-border-right'>" + (i + 1) + "</td><td class='med-fixed-col'>" + score + "%</td><td>" + pair_num + " / " + names + "</td></tr>";
+    var border_bottom = "";
+    if ((i + 1) === final_scores_sorted.length) {
+      border_bottom = " class='border-bottom'";
+    }
+    rankings_table += "<tr" + border_bottom + "><td class='small-fixed-col black-border-right'>" + (i + 1) + "</td><td class='med-fixed-col black-border-right'>" + score + "%</td><td>" + pair_num + " / " + names + "</td></tr>";
   }
   rankings_table += "</table>";
 

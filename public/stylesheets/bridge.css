@@ -108,9 +108,12 @@
   display: none;
 }
 
-tr.border-bottom th {
+tr.thick-border-bottom {
   border-bottom: 2px solid black;
-  text-align: center;
+}
+
+tr.border-bottom {
+  border-bottom: 1px solid black;
 }
 
 .black-border-right {
@@ -126,6 +129,10 @@ table {
   border-collapse: collapse;
   table-layout: fixed;
   width: 100%;
+}
+
+th {
+  text-align: center;
 }
 
 td {
@@ -152,6 +159,10 @@ tr:nth-child(even) {
 
 .bold {
   font-weight: bold;
+}
+
+.scoring-div {
+  padding-bottom: 25px;
 }
 
 .side-by-side {

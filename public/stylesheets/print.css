@@ -3,8 +3,13 @@
   width: 1250px;
 }
 
-tr.border-bottom th {
+tr.thick-border-bottom {
   border-bottom: 2px solid black;
+  text-align: center;
+}
+
+tr.border-bottom {
+  border-bottom: 1px solid black;
   text-align: center;
 }
 
@@ -47,6 +52,10 @@ tr:nth-child(even) {
 
 .bold {
   font-weight: bold;
+}
+
+.scoring-div {
+  padding-bottom: 25px;
 }
 
 .side-by-side {
