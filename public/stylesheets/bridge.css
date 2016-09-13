@@ -266,6 +266,11 @@ body {
   display: table-cell;
   vertical-align: top;
 }
+
+.cover-heading {
+  font-size: 50px;
+}
+
 .cover-container {
   margin-right: auto;
   margin-left: auto;
