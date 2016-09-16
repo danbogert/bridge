@@ -55,11 +55,11 @@
             </button>
             <h4 class="modal-title" id="myModalLabel">Event Details</h4>
           </div>
-
-          <div class="modal-body">
             <form>
+          <div class="modal-body">
+
               <!-- Date -->
-              <div class="form-group row">
+              <div id="here" class="form-group row">
                 <label for="date" class="col-sm-3 form-control-label">Date</label>
                 <div class="col-sm-6">
                   <div class="form-group">
@@ -143,13 +143,14 @@
                 </div>
               </div>
 
-            </form>
+
           </div>
 
           <div class="modal-footer">
             <button id="cancel-event-button" type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-            <button id="create-event-button" type="button" class="btn btn-primary">Create Event</button>
+            <button id="create-event-button" type="submit" class="btn btn-primary">Create Event</button>
           </div>
+                      </form>
         </div>
       </div>
     </div>

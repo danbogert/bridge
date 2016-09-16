@@ -136,12 +136,21 @@ function cleanNewEventModal() {
   $("#pair1-south").val("");
   $("#pair1-east").val("");
   $("#pair1-west").val("");
+  $("#date input").val("");
   // datepicker
   // movement
   // hands per table
 }
 
 function createEvent() {
+  if (!eventInputsValid()) {
+    console.log("inputs not valid!")
+    // add inalaid class
+    return;
+  }
+  console.log("inputs valid!");
+
+
   $("#myModal").modal('toggle');
   $(".nav li a").blur();
 
@@ -244,6 +253,18 @@ function createBoards(total_number_of_hands) {
   }
 
   return boards;
+}
+
+function eventInputsValid() {
+  var inputs = $("#myModal input");
+
+  for (var i = 0; i < inputs.length; i++) {
+    if (!inputs[i].checkValidity()) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 function createTableHands(hand_num, ns_pairs, boards, hands_per_table) {

@@ -183,29 +183,12 @@ html {
   background-size: cover;
 }
 
-html, body, form, fieldset, table, tr, td, img {
-    font-size: 17px;
-    font-family: arial,helvetica,sans-serif;
+.datepicker {
+  width: 500px;
 }
 
-input, button, select, textarea, optgroup, option {
-    font-family: inherit;
-    font-size: inherit;
-    font-style: inherit;
-    font-weight: inherit;
-}
-
-/* rest of your styles; like: */
-body {
-    font-size: 17px;
-}
-
-/*input:invalid {
+/*#myModal input:invalid {
   border: 2px solid red;
-}
-
-input:valid {
-  border: 2px solid green;
 }*/
 
 #scores-well {
@@ -217,29 +200,6 @@ input:valid {
   width: 100%;
   background: white;
 }
-
-
-
-
-
-/* Custom default button */
-/*.btn-default,
-.btn-default:hover,
-.btn-default:focus {
-  color: #333;
-  text-shadow: none;
-  background-color: #fff;
-  border: 1px solid #fff;
-}*/
-
-
-
-
-/*html,
-body {
-  height: 100%;
-  background-color: #333;
-}*/
 
 body {
   height: 100%;
