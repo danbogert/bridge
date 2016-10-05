@@ -15,7 +15,7 @@ class Board {
   }
 }
 
-class BoardHand {
+class Hand {
   constructor(ns_pair) {
     this.ns_pair = ns_pair;
   }
@@ -95,8 +95,8 @@ function addNorthSouthPair() {
   var nextId = $(".ns-pair").length + 1;
   $("<label id='ns-pair" + nextId + "-label' for='ns-pair" + nextId + "' class='col-sm-2 form-control-label'>Pair " + nextId + "</label>" +
     "<div class='col-sm-10 pair ns-pair' id='ns-pair" + nextId + "'>" +
-      "<input type='text' class='form-control' id='pair" + nextId + "-north' placeholder='North " + nextId + "' >" +
-      "<input type='text' class='form-control' id='pair" + nextId + "-south' placeholder='South " + nextId + "'>" +
+      "<input type='text' class='form-control' id='pair" + nextId + "-north' placeholder='North " + nextId + "' required>" +
+      "<input type='text' class='form-control' id='pair" + nextId + "-south' placeholder='South " + nextId + "' required>" +
     "</div>").insertBefore($("#add-ns-pair-button"));
 }
 
@@ -104,8 +104,8 @@ function addEastWestPair() {
   var nextId = $(".ew-pair").length + 1;
   $("<label id='ew-pair" + nextId + "-label' for='ew-pair" + nextId + "' class='col-sm-2 form-control-label'>Pair " + nextId + "</label>" +
     "<div class='col-sm-10 pair ew-pair' id='ew-pair" + nextId + "'>" +
-      "<input type='text' class='form-control' id='pair" + nextId + "-east' placeholder='East " + nextId + "'>" +
-      "<input type='text' class='form-control' id='pair" + nextId + "-west' placeholder='West " + nextId + "'>" +
+      "<input type='text' class='form-control' id='pair" + nextId + "-east' placeholder='East " + nextId + "' required>" +
+      "<input type='text' class='form-control' id='pair" + nextId + "-west' placeholder='West " + nextId + "' required>" +
     "</div>").insertBefore($("#add-ew-pair-button"));
 }
 
@@ -205,8 +205,8 @@ function createBoards(total_number_of_hands, ns_pairs) {
   var boards = [];
 
   for (var i = 1; i <= total_number_of_hands; i++) {
-    var board_hands = createBoardHands(ns_pairs);
-    
+    var board_hands = createHands(ns_pairs);
+
     if (i % 16 == 0) {
       boards.push(new Board(i, Dealer.WEST, Vulnerable.EW, board_hands));
     } else if (i % 15 == 0) {
@@ -257,11 +257,11 @@ function eventInputsValid() {
   return true;
 }
 
-function createBoardHands(ns_pairs) {
+function createHands(ns_pairs) {
   var board_hands = [];
 
   for (var i = 0; i < ns_pairs.length; i++) {
-    board_hands.push(new BoardHand(ns_pairs[i]));
+    board_hands.push(new Hand(ns_pairs[i]));
   }
 
   return board_hands;
@@ -401,7 +401,7 @@ function calculateScore(full_board_hand_id) {
     }
   }
 
-  if (allBoardHandsScored(thisEvent.boards[board_id].hands)) {
+  if (allHandsScored(thisEvent.boards[board_id].hands)) {
     $("#heading" + (board_id + 1)).removeClass("alert-danger");
     $("#heading" + (board_id + 1)).addClass("alert-success");
 
@@ -648,7 +648,7 @@ function setScores(full_board_hand_id, board_id, hand_id, score) {
   }
 }
 
-function allBoardHandsScored(hands) {
+function allHandsScored(hands) {
   for (var i = 0; i < hands.length; i++) {
     if (hands[i].ns_score === undefined) {
       return false;
@@ -734,10 +734,6 @@ function calculateMatchPoints(sortedPairScoreTuples) {
   }
 
   return matchpoints;
-}
-
-function allHandsScored() {
-  return thisEvent.hands.length === $("#accordion div .alert-success").length;
 }
 
 function createMatchPointTable(ns) {
