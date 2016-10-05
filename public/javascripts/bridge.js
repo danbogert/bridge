@@ -1,22 +1,23 @@
 "use strict";
 
 class BridgeEvent {
-  constructor(hands) {
+  constructor(boards) {
+    this.boards = boards;
+  }
+}
+
+class Board {
+  constructor(number, dealer, vulnerable, hands) {
+    this.number = number;
+    this.dealer = dealer;
+    this.vulnerable = vulnerable;
     this.hands = hands;
   }
 }
 
-class Hand {
-  constructor(number, table_hands) {
-    this.number = number;
-    this.table_hands = table_hands;
-  }
-}
-
-class TableHand {
-  constructor(ns_pair, board) {
+class BoardHand {
+  constructor(ns_pair) {
     this.ns_pair = ns_pair;
-    this.board = board;
   }
 }
 
@@ -33,14 +34,6 @@ class EastWestPair {
     this.number = number;
     this.east = east;
     this.west = west;
-  }
-}
-
-class Board {
-  constructor(number, dealer, vulnerable) {
-    this.number = number;
-    this.dealer = dealer;
-    this.vulnerable = vulnerable;
   }
 }
 
@@ -71,7 +64,9 @@ var thisEvent;
 $(function() {
   $("#masthead").hide();
 
-  $('#date').datepicker();
+  $('#date').datepicker({
+    autoclose: true
+  });
 
   $(".dropdown-menu li a").click(function() {
     $(this).parents(".dropdown").find('.btn').html($(this).text() + ' <span class="caret"></span>');
@@ -100,8 +95,8 @@ function addNorthSouthPair() {
   var nextId = $(".ns-pair").length + 1;
   $("<label id='ns-pair" + nextId + "-label' for='ns-pair" + nextId + "' class='col-sm-2 form-control-label'>Pair " + nextId + "</label>" +
     "<div class='col-sm-10 pair ns-pair' id='ns-pair" + nextId + "'>" +
-      "<input type='text' class='form-control' id='pair" + nextId + "-north' placeholder='North " + nextId + "' required>" +
-      "<input type='text' class='form-control' id='pair" + nextId + "-south' placeholder='South " + nextId + "' required>" +
+      "<input type='text' class='form-control' id='pair" + nextId + "-north' placeholder='North " + nextId + "' >" +
+      "<input type='text' class='form-control' id='pair" + nextId + "-south' placeholder='South " + nextId + "'>" +
     "</div>").insertBefore($("#add-ns-pair-button"));
 }
 
@@ -109,8 +104,8 @@ function addEastWestPair() {
   var nextId = $(".ew-pair").length + 1;
   $("<label id='ew-pair" + nextId + "-label' for='ew-pair" + nextId + "' class='col-sm-2 form-control-label'>Pair " + nextId + "</label>" +
     "<div class='col-sm-10 pair ew-pair' id='ew-pair" + nextId + "'>" +
-      "<input type='text' class='form-control' id='pair" + nextId + "-east' placeholder='East " + nextId + "' required>" +
-      "<input type='text' class='form-control' id='pair" + nextId + "-west' placeholder='West " + nextId + "' required>" +
+      "<input type='text' class='form-control' id='pair" + nextId + "-east' placeholder='East " + nextId + "'>" +
+      "<input type='text' class='form-control' id='pair" + nextId + "-west' placeholder='West " + nextId + "'>" +
     "</div>").insertBefore($("#add-ew-pair-button"));
 }
 
@@ -145,11 +140,9 @@ function cleanNewEventModal() {
 function createEvent() {
   if (!eventInputsValid()) {
     console.log("inputs not valid!")
-    // add inalaid class
+    // add invalid class?
     return;
   }
-  console.log("inputs valid!");
-
 
   $("#myModal").modal('toggle');
   $(".nav li a").blur();
@@ -174,14 +167,9 @@ function createEvent() {
   var number_of_tables = Math.max(number_ns_pairs, number_ew_pairs);
   var total_number_of_hands = number_hands_per_table * number_of_tables;
 
-  var boards = createBoards(total_number_of_hands);
+  var boards = createBoards(total_number_of_hands, ns_pairs);
 
-  var hands = [];
-  for (var hand_id = 1; hand_id <= total_number_of_hands; hand_id++) {
-    hands.push(new Hand(hand_id, createTableHands(hand_id, ns_pairs, boards, number_hands_per_table)));
-  }
-
-  var bridgeEvent = new BridgeEvent(hands);
+  var bridgeEvent = new BridgeEvent(boards);
   bridgeEvent.ns_pairs = createPairsLookupMap(ns_pairs);
   bridgeEvent.ew_pairs = createPairsLookupMap(ew_pairs);
 
@@ -213,42 +201,44 @@ function createPairsLookupMap(pairs) {
   return pairs_map;
 }
 
-function createBoards(total_number_of_hands) {
+function createBoards(total_number_of_hands, ns_pairs) {
   var boards = [];
 
   for (var i = 1; i <= total_number_of_hands; i++) {
+    var board_hands = createBoardHands(ns_pairs);
+    
     if (i % 16 == 0) {
-      boards.push(new Board(i, Dealer.WEST, Vulnerable.EW));
+      boards.push(new Board(i, Dealer.WEST, Vulnerable.EW, board_hands));
     } else if (i % 15 == 0) {
-      boards.push(new Board(i, Dealer.SOUTH, Vulnerable.NS));
+      boards.push(new Board(i, Dealer.SOUTH, Vulnerable.NS, board_hands));
     } else if (i % 14 == 0) {
-      boards.push(new Board(i, Dealer.EAST, Vulnerable.NONE));
+      boards.push(new Board(i, Dealer.EAST, Vulnerable.NONE, board_hands));
     } else if (i % 13 == 0) {
-      boards.push(new Board(i, Dealer.NORTH, Vulnerable.ALL));
+      boards.push(new Board(i, Dealer.NORTH, Vulnerable.ALL, board_hands));
     } else if (i % 12 == 0) {
-      boards.push(new Board(i, Dealer.WEST, Vulnerable.NS));
+      boards.push(new Board(i, Dealer.WEST, Vulnerable.NS, board_hands));
     } else if (i % 11 == 0) {
-      boards.push(new Board(i, Dealer.SOUTH, Vulnerable.NONE));
+      boards.push(new Board(i, Dealer.SOUTH, Vulnerable.NONE, board_hands));
     } else if (i % 10 == 0) {
-      boards.push(new Board(i, Dealer.EAST, Vulnerable.ALL));
+      boards.push(new Board(i, Dealer.EAST, Vulnerable.ALL, board_hands));
     } else if (i % 9 == 0) {
-      boards.push(new Board(i, Dealer.NORTH, Vulnerable.EW));
+      boards.push(new Board(i, Dealer.NORTH, Vulnerable.EW, board_hands));
     } else if (i % 8 == 0) {
-      boards.push(new Board(i, Dealer.WEST, Vulnerable.NONE));
+      boards.push(new Board(i, Dealer.WEST, Vulnerable.NONE, board_hands));
     } else if (i % 7 == 0) {
-      boards.push(new Board(i, Dealer.SOUTH, Vulnerable.ALL));
+      boards.push(new Board(i, Dealer.SOUTH, Vulnerable.ALL, board_hands));
     } else if (i % 6 == 0) {
-      boards.push(new Board(i, Dealer.EAST, Vulnerable.EW));
+      boards.push(new Board(i, Dealer.EAST, Vulnerable.EW, board_hands));
     } else if (i % 5 == 0) {
-      boards.push(new Board(i, Dealer.NORTH, Vulnerable.NS));
+      boards.push(new Board(i, Dealer.NORTH, Vulnerable.NS, board_hands));
     } else if (i % 4 == 0) {
-      boards.push(new Board(i, Dealer.WEST, Vulnerable.ALL));
+      boards.push(new Board(i, Dealer.WEST, Vulnerable.ALL, board_hands));
     } else if (i % 3 == 0) {
-      boards.push(new Board(i, Dealer.SOUTH, Vulnerable.EW));
+      boards.push(new Board(i, Dealer.SOUTH, Vulnerable.EW, board_hands));
     } else if (i % 2 == 0) {
-      boards.push(new Board(i, Dealer.EAST, Vulnerable.NS));
+      boards.push(new Board(i, Dealer.EAST, Vulnerable.NS, board_hands));
     } else {
-      boards.push(new Board(i, Dealer.NORTH, Vulnerable.NONE));
+      boards.push(new Board(i, Dealer.NORTH, Vulnerable.NONE, board_hands));
     }
   }
 
@@ -267,35 +257,29 @@ function eventInputsValid() {
   return true;
 }
 
-function createTableHands(hand_num, ns_pairs, boards, hands_per_table) {
-  var table_hands = [];
-  var max_boards = boards.length;
+function createBoardHands(ns_pairs) {
+  var board_hands = [];
 
-  for (var table_num = 1; table_num <= ns_pairs.length; table_num++) {
-    var board_num = (table_num * hands_per_table) - hands_per_table + hand_num;
-    if (board_num > max_boards) {
-      board_num -= max_boards;
-    }
-
-    table_hands.push(new TableHand(ns_pairs[table_num - 1], boards[board_num - 1]));
+  for (var i = 0; i < ns_pairs.length; i++) {
+    board_hands.push(new BoardHand(ns_pairs[i]));
   }
 
-  return table_hands;
+  return board_hands;
 }
 
-function createScoringAccordion(bridgeEvent, ns_pairs, ew_pairs) {
+function createScoringAccordion(ns_pairs, ew_pairs) {
   $("#accordion").empty();
 
-  var hands = bridgeEvent.hands;
-  for (var hand_num = 1; hand_num <= hands.length; hand_num++) {
+  var boards = thisEvent.boards;
+  for (var board_num = 1; board_num <= boards.length; board_num++) {
     $("#accordion").append(
       "<div class='no-margin panel panel-default'>" +
-        "<div class='no-margin alert alert-danger clickable' role='tab' id='heading" + hand_num + "' data-toggle='collapse' data-parent='#accordion' data-target='#collapse" + hand_num + "'>" +
+        "<div class='no-margin alert alert-danger clickable' role='tab' id='heading" + board_num + "' data-toggle='collapse' data-parent='#accordion' data-target='#collapse" + board_num + "'>" +
           "<h4 class='panel-title'>" +
-            "Hand " + hand_num +
+            "Board " + board_num +
           "</h4>" +
         "</div>" +
-        "<div id='collapse" + hand_num + "' class='panel-collapse collapse' role='tabpanel' aria-labelledby='heading" + hand_num + "'>" +
+        "<div id='collapse" + board_num + "' class='panel-collapse collapse' role='tabpanel' aria-labelledby='heading" + board_num + "'>" +
           "<div class='row header row-eq-height'>" +
             "<div class='col-sm-1'><span>Board</span></div>" +
             "<div class='col-sm-1'><span>N/S</span></div>" +
@@ -310,7 +294,7 @@ function createScoringAccordion(bridgeEvent, ns_pairs, ew_pairs) {
               "</div>" +
             "</div>" +
           "</div>" +
-          createScoringForms(hands[hand_num - 1], ns_pairs, ew_pairs, bridgeEvent) +
+          createScoringForms(boards[board_num - 1], ns_pairs, ew_pairs) +
         "</div>" +
       "</div>");
   }
@@ -318,28 +302,29 @@ function createScoringAccordion(bridgeEvent, ns_pairs, ew_pairs) {
   $("#collapse1").addClass("in")
 }
 
-function createScoringForms(hand, ns_pairs, ew_pairs, bridgeEvent) {
+function createScoringForms(board, ns_pairs, ew_pairs) {
   var ew_pair_numbers = [];
   for (var i = 1; i <= ew_pairs.length; i++) {
     ew_pair_numbers.push(i);
   }
 
-  var table_hands = hand.table_hands;
+  var hands = board.hands;
   var content = "";
-  for (var i = 0; i < table_hands.length; i++) {
+
+  for (var i = 0; i < hands.length; i++) {
     var colored_row = (i % 2 == 0) ? " colored-row " : "";
     content += "<div class='row" + colored_row + "'>" +
-                  "<form id='" + hand.number + "-" + i + "-form' action='javascript:void(0);'>" +
-                    "<div class='col-sm-1'><input class='text-only' type='text' id='" + hand.number + "-" + i + "-board' value='" + table_hands[i].board.number + "' disabled></div>" +
-                    "<div class='col-sm-1'><input class='text-only' type='text' id='" + hand.number + "-" + i + "-ns' value='" + table_hands[i].ns_pair.number + "' disabled></div>" +
-                    "<div class='col-sm-1'>" + createDropdown(hand.number + '-' + i, "-ew", "E/W", ew_pair_numbers, bridgeEvent) + "</div>" +
-                    "<div class='col-sm-2'><input type='text' pattern='^[1-7]([Ss]|[Dd]|[Cc]|[Hh]|([Nn]([Tt])?))([Xx])?([Xx])?$' class='form-control uppercase' id='" + hand.number + "-" + i + "-contract'  oninput='isRowComplete(\"" + hand.number + "-" + i + "\")' required></div>" +
-                    "<div class='col-sm-2'>" + createDropdown(hand.number + '-' + i, "-by", "By", ["North", "South", "East", "West"], bridgeEvent) + "</div>" +
-                    "<div class='col-sm-2'>" + createDropdown(hand.number + '-' + i, "-tricks", "Tricks", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], bridgeEvent) + "</div>" +
+                  "<form id='" + board.number + "-" + i + "-form' action='javascript:void(0);'>" +
+                    "<div class='col-sm-1'><input class='text-only' type='text' id='" + board.number + "-" + i + "-board' value='" + board.number + "' disabled></div>" +
+                    "<div class='col-sm-1'><input class='text-only' type='text' id='" + board.number + "-" + i + "-ns' value='" + hands[i].ns_pair.number + "' disabled></div>" +
+                    "<div class='col-sm-1'>" + createDropdown(board.number + '-' + i, "-ew", "E/W", ew_pair_numbers) + "</div>" +
+                    "<div class='col-sm-2'><input type='text' pattern='^[1-7]([Ss]|[Dd]|[Cc]|[Hh]|([Nn]([Tt])?))([Xx])?([Xx])?$' class='form-control uppercase' id='" + board.number + "-" + i + "-contract'  oninput='isRowComplete(\"" + board.number + "-" + i + "\")' required></div>" +
+                    "<div class='col-sm-2'>" + createDropdown(board.number + '-' + i, "-by", "By", ["North", "South", "East", "West"]) + "</div>" +
+                    "<div class='col-sm-2'>" + createDropdown(board.number + '-' + i, "-tricks", "Tricks", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]) + "</div>" +
                     "<div class='col-sm-3'>" +
                       "<div class='row'>" +
-                        "<div class='col-sm-6'><input class='text-only' type='text' id='" + hand.number + "-" + i + "-nsscore' disabled></div>" +
-                        "<div class='col-sm-6'><input class='text-only' type='text' id='" + hand.number + "-" + i + "-ewscore' disabled></div>" +
+                        "<div class='col-sm-6'><input class='text-only' type='text' id='" + board.number + "-" + i + "-nsscore' disabled></div>" +
+                        "<div class='col-sm-6'><input class='text-only' type='text' id='" + board.number + "-" + i + "-ewscore' disabled></div>" +
                       "</div>" +
                     "</div>" +
                   "</form>" +
@@ -349,60 +334,60 @@ function createScoringForms(hand, ns_pairs, ew_pairs, bridgeEvent) {
   return content;
 }
 
-function createDropdown(table_hand_id, dropdown_id, text, values, bridgeEvent) {
+function createDropdown(board_hand_id, dropdown_id, text, values) {
   var dropdown_values = "";
   for (var i = 0; i < values.length; i++) {
     dropdown_values += "<option value='" + values[i] + "'>" + values[i] + "</option>";
   }
 
-  return "<select id='" + table_hand_id + dropdown_id + "' class='selectpicker btn-default' onchange='isRowComplete(\"" + table_hand_id + "\")' required>" +
+  return "<select id='" + board_hand_id + dropdown_id + "' class='selectpicker btn-default' onchange='isRowComplete(\"" + board_hand_id + "\")' required>" +
             "<option value='' disabled selected>" + text + "</option>" +
             dropdown_values +
           "</select>";
 }
 
-function isRowComplete(table_hand_id) {
+function isRowComplete(board_hand_id) {
   var currentlyActive = $(document.activeElement);
 
-  if (isValid(table_hand_id + "-ew") && isValid(table_hand_id + "-contract") && isValid(table_hand_id + "-by") && isValid(table_hand_id + "-tricks")) {
-    calculateScore(table_hand_id);
+  if (isValid(board_hand_id + "-ew") && isValid(board_hand_id + "-contract") && isValid(board_hand_id + "-by") && isValid(board_hand_id + "-tricks")) {
+    calculateScore(board_hand_id);
   }
 
   currentlyActive.focus();
 }
 
-function isValid(table_hand_id) {
-  return $("#" + table_hand_id)[0].checkValidity();
+function isValid(board_hand_id) {
+  return $("#" + board_hand_id)[0].checkValidity();
 }
 
-function calculateScore(full_table_hand_id) {
-  var ns_number = $("#" + full_table_hand_id + "-ns").val();
-  var ew_number = $("#" + full_table_hand_id + "-ew").val();
-  var contract = $("#" + full_table_hand_id + "-contract").val().toUpperCase();
-  var declarer = $("#" + full_table_hand_id + "-by").val();
-  var taken_num_tricks = $("#" + full_table_hand_id + "-tricks").val();
+function calculateScore(full_board_hand_id) {
+  var ns_number = $("#" + full_board_hand_id + "-ns").val();
+  var ew_number = $("#" + full_board_hand_id + "-ew").val();
+  var contract = $("#" + full_board_hand_id + "-contract").val().toUpperCase();
+  var declarer = $("#" + full_board_hand_id + "-by").val();
+  var taken_num_tricks = $("#" + full_board_hand_id + "-tricks").val();
 
   var doubled = contract.indexOf("X") > 0;
   var redoubled = contract.indexOf("XX") > 0;
 
-  var ids = full_table_hand_id.split("-");
-  var hand_id = parseInt(ids[0]) - 1;
-  var table_hand_id = parseInt(ids[1]);
-  var board = thisEvent.hands[hand_id].table_hands[table_hand_id].board;
+  var ids = full_board_hand_id.split("-");
+  var board_id = parseInt(ids[0]) - 1;
+  var hand_id = parseInt(ids[1]);
+  var board = thisEvent.boards[board_id];
 
   var contract_num_tricks = parseInt(contract.charAt(0));
   var difference_num_tricks = (taken_num_tricks - 6) - contract_num_tricks;
 
-  thisEvent.hands[hand_id].table_hands[table_hand_id].ew_pair = thisEvent.ew_pairs[ew_number];
+  thisEvent.boards[board_id].hands[hand_id].ew_pair = thisEvent.ew_pairs[ew_number];
 
   if (difference_num_tricks < 0) {
     var vulnerable = isDeclarerVulnerable(declarer, board);
     var penalty_points = calculatePenaltyPoints(difference_num_tricks * -1, vulnerable, doubled, redoubled);
 
     if (declarer === "North" || declarer === "South") {
-      setScores(full_table_hand_id, hand_id, table_hand_id, penalty_points * -1);
+      setScores(full_board_hand_id, board_id, hand_id, penalty_points * -1);
     } else {
-      setScores(full_table_hand_id, hand_id, table_hand_id, penalty_points);
+      setScores(full_board_hand_id, board_id, hand_id, penalty_points);
     }
   } else {
     var vulnerable = isDefenderVulnerable(declarer, board);
@@ -410,17 +395,17 @@ function calculateScore(full_table_hand_id) {
     var victory_points = calculateVictoryPoints(contract_num_tricks, difference_num_tricks, suit, vulnerable, doubled, redoubled);
 
     if (declarer === "North" || declarer === "South") {
-      setScores(full_table_hand_id, hand_id, table_hand_id, victory_points);
+      setScores(full_board_hand_id, board_id, hand_id, victory_points);
     } else {
-      setScores(full_table_hand_id, hand_id, table_hand_id, victory_points * -1);
+      setScores(full_board_hand_id, board_id, hand_id, victory_points * -1);
     }
   }
 
-  if (allTableHandsScored(thisEvent.hands[hand_id].table_hands)) {
-    $("#heading" + (hand_id + 1)).removeClass("alert-danger");
-    $("#heading" + (hand_id + 1)).addClass("alert-success");
+  if (allBoardHandsScored(thisEvent.boards[board_id].hands)) {
+    $("#heading" + (board_id + 1)).removeClass("alert-danger");
+    $("#heading" + (board_id + 1)).addClass("alert-success");
 
-    calculateMatchPointsForHand(thisEvent.hands[hand_id]);
+    calculateMatchPointsForBoard(thisEvent.boards[board_id]);
     var ns_matchpoint_table = createMatchPointTable(true);
     var ew_matchpoint_table = createMatchPointTable(false);
     var ns_rankings_table = createRankingTable(true);
@@ -649,23 +634,23 @@ function getGameBonus(contract_points, vulnerable) {
 }
 
 // Pass the score for ns
-function setScores(full_table_hand_id, hand_id, table_hand_id, score) {
-  thisEvent.hands[hand_id].table_hands[table_hand_id].ns_score = score;
-  thisEvent.hands[hand_id].table_hands[table_hand_id].ew_score = score * -1;
+function setScores(full_board_hand_id, board_id, hand_id, score) {
+  thisEvent.boards[board_id].hands[hand_id].ns_score = score;
+  thisEvent.boards[board_id].hands[hand_id].ew_score = score * -1;
 
   // Only show the positive score, clear the other
   if (score > 0) {
-    $("#" + full_table_hand_id + "-nsscore").val(score);
-    $("#" + full_table_hand_id + "-ewscore").val("");
+    $("#" + full_board_hand_id + "-nsscore").val(score);
+    $("#" + full_board_hand_id + "-ewscore").val("");
   } else {
-    $("#" + full_table_hand_id + "-nsscore").val("");
-    $("#" + full_table_hand_id + "-ewscore").val(score * -1);
+    $("#" + full_board_hand_id + "-nsscore").val("");
+    $("#" + full_board_hand_id + "-ewscore").val(score * -1);
   }
 }
 
-function allTableHandsScored(table_hands) {
-  for (var i = 0; i < table_hands.length; i++) {
-    if (table_hands[i].ns_score === undefined) {
+function allBoardHandsScored(hands) {
+  for (var i = 0; i < hands.length; i++) {
+    if (hands[i].ns_score === undefined) {
       return false;
     }
   }
@@ -673,26 +658,26 @@ function allTableHandsScored(table_hands) {
   return true;
 }
 
-function calculateMatchPointsForHand(hand) {
+function calculateMatchPointsForBoard(board) {
   // create sorted array of tuples
   var ns_pairs_to_scores = {};
-  for (var i = 0; i < hand.table_hands.length; i++) {
-    ns_pairs_to_scores[hand.table_hands[i].ns_pair.number] = hand.table_hands[i].ns_score;
+  for (var i = 0; i < board.hands.length; i++) {
+    ns_pairs_to_scores[board.hands[i].ns_pair.number] = board.hands[i].ns_score;
   }
   var sortedNsPairScoreTuples = sortByValue(ns_pairs_to_scores);
 
   // assign matchpoints to each pair
-  hand.ns_matchpoints = calculateMatchPoints(sortedNsPairScoreTuples);
+  board.ns_matchpoints = calculateMatchPoints(sortedNsPairScoreTuples);
 
 
   var ew_pairs_to_scores = {};
-  for (var i = 0; i < hand.table_hands.length; i++) {
-    ew_pairs_to_scores[hand.table_hands[i].ew_pair.number] = hand.table_hands[i].ew_score;
+  for (var i = 0; i < board.hands.length; i++) {
+    ew_pairs_to_scores[board.hands[i].ew_pair.number] = board.hands[i].ew_score;
   }
   var sortedEwPairScoreTuples = sortByValue(ew_pairs_to_scores);
 
   // assign matchpoints to each pair
-  hand.ew_matchpoints = calculateMatchPoints(sortedEwPairScoreTuples);
+  board.ew_matchpoints = calculateMatchPoints(sortedEwPairScoreTuples);
 }
 
 function sortByValue(obj) {
@@ -757,11 +742,11 @@ function allHandsScored() {
 
 function createMatchPointTable(ns) {
   var num_pairs = ns ? Object.keys(thisEvent.ns_pairs).length : Object.keys(thisEvent.ew_pairs).length;
-  var single_hand_high_score = (thisEvent.hands[0].table_hands.length - 1) * 2;
-  var best_possible_score = single_hand_high_score * thisEvent.hands.length;
+  var single_hand_high_score = (thisEvent.boards[0].hands.length - 1) * 2;
+  var best_possible_score = single_hand_high_score * thisEvent.boards.length;
 
   var matchpoint_table = "<table><tr class='thick-border-bottom'><th class='small-fixed-col'>Pair</th>";
-  for (var i = 1; i <= thisEvent.hands.length; i++) {
+  for (var i = 1; i <= thisEvent.boards.length; i++) {
     matchpoint_table += "<th>" + i + "</th>";
   }
   matchpoint_table += "<th class='small-fixed-col'>Total</th><th class='med-fixed-col'>%</th><th class='large-fixed-col'>Name</th></tr>";
@@ -774,23 +759,23 @@ function createMatchPointTable(ns) {
     matchpoint_table += "<tr" + border_bottom + "><td class='black-border-right'>" + pair + "</td>";
 
     var total_matchpoints = 0;
-    for (var hand_index = 0; hand_index < thisEvent.hands.length; hand_index++) {
-      // if scores not entered for this hand yet, just put an empty space
-      var hand = thisEvent.hands[hand_index];
-      if ((ns && hand.ns_matchpoints === undefined) || (!ns && hand.ew_matchpoints === undefined))  {
+    for (var board_index = 0; board_index < thisEvent.boards.length; board_index++) {
+      // if scores not entered for this board yet, just put an empty space
+      var board = thisEvent.boards[board_index];
+      if ((ns && board.ns_matchpoints === undefined) || (!ns && board.ew_matchpoints === undefined))  {
         matchpoint_table += "<td> </td>";
         continue;
       }
 
-      // if this pair skipped this hand, put a hyphen
-      var hand_matchpoints = ns ? hand.ns_matchpoints[pair] : hand.ew_matchpoints[pair];
-      if (hand_matchpoints === undefined) {
+      // if this pair skipped this board, put a hyphen
+      var board_matchpoints = ns ? board.ns_matchpoints[pair] : board.ew_matchpoints[pair];
+      if (board_matchpoints === undefined) {
         matchpoint_table += "<td>-</td>";
         continue;
       }
 
-      total_matchpoints += hand_matchpoints;
-      matchpoint_table += "<td>" + hand_matchpoints + "</td>";
+      total_matchpoints += board_matchpoints;
+      matchpoint_table += "<td>" + board_matchpoints + "</td>";
     }
 
     var names = ns ? (thisEvent.ns_pairs[pair].north + " & " + thisEvent.ns_pairs[pair].south) : (thisEvent.ew_pairs[pair].east + " & " + thisEvent.ew_pairs[pair].west);
@@ -802,27 +787,27 @@ function createMatchPointTable(ns) {
 
 function createRankingTable(ns) {
   var num_pairs = ns ? Object.keys(thisEvent.ns_pairs).length : Object.keys(thisEvent.ew_pairs).length;
-  var single_hand_high_score = (thisEvent.hands[0].table_hands.length - 1) * 2;
-  var best_possible_score = single_hand_high_score * thisEvent.hands.length;
+  var single_hand_high_score = (thisEvent.boards[0].hands.length - 1) * 2;
+  var best_possible_score = single_hand_high_score * thisEvent.boards.length;
   var final_scores = {};
 
   for (var pair = 1; pair <= num_pairs; pair++) {
 
     var total_matchpoints = 0;
-    for (var hand_index = 0; hand_index < thisEvent.hands.length; hand_index++) {
-      // if scores not entered for this hand yet, no score
-      var hand = thisEvent.hands[hand_index];
-      if ((ns && hand.ns_matchpoints === undefined) || (!ns && hand.ew_matchpoints === undefined))  {
+    for (var board_index = 0; board_index < thisEvent.boards.length; board_index++) {
+      // if scores not entered for this board yet, no score
+      var board = thisEvent.boards[board_index];
+      if ((ns && board.ns_matchpoints === undefined) || (!ns && board.ew_matchpoints === undefined))  {
         continue;
       }
 
-      // if this pair skipped this hand, no score
-      var hand_matchpoints = ns ? hand.ns_matchpoints[pair] : hand.ew_matchpoints[pair];
-      if (hand_matchpoints === undefined) {
+      // if this pair skipped this board, no score
+      var board_matchpoints = ns ? board.ns_matchpoints[pair] : board.ew_matchpoints[pair];
+      if (board_matchpoints === undefined) {
         continue;
       }
 
-      total_matchpoints += hand_matchpoints;
+      total_matchpoints += board_matchpoints;
     }
 
     final_scores[pair] = (total_matchpoints / best_possible_score) * 100;
