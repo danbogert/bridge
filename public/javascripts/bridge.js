@@ -474,8 +474,8 @@ function calculateScoreForBoardHand(full_board_hand_id, board_id, hand_id, board
     var declarer = $("#" + full_board_hand_id + "-by").val();
     var taken_num_tricks = $("#" + full_board_hand_id + "-tricks").val();
 
-    var doubled = contract.indexOf("X") > 0;
-    var redoubled = contract.indexOf("XX") > 0;
+    var doubled = (contract.indexOf("X") > 0 || contract.indexOf("*") > 0);
+    var redoubled = (contract.indexOf("XX") > 0 || contract.indexOf("**") > 0);
 
     var contract_num_tricks = parseInt(contract.charAt(0));
     var numOddTricks = (taken_num_tricks - 6) - contract_num_tricks;
