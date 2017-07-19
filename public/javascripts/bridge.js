@@ -169,12 +169,11 @@ function createEvent() {
 
   var boards = createBoards(total_number_of_hands, ns_pairs);
 
-  var bridgeEvent = new BridgeEvent(boards);
-  bridgeEvent.ns_pairs = createPairsLookupMap(ns_pairs);
-  bridgeEvent.ew_pairs = createPairsLookupMap(ew_pairs);
+  thisEvent = new BridgeEvent(boards);
+  thisEvent.ns_pairs = createPairsLookupMap(ns_pairs);
+  thisEvent.ew_pairs = createPairsLookupMap(ew_pairs);
 
-  thisEvent = bridgeEvent;
-  createScoringAccordion(bridgeEvent, ns_pairs, ew_pairs);
+  createScoringAccordion(ns_pairs, ew_pairs);
 
   $(".dropdown-menu li a").click(function() {
     $(this).parents(".dropdown").find('.btn').html($(this).text() + ' <span class="caret"></span>');
@@ -189,6 +188,18 @@ function createEvent() {
   $("#masthead").show();
 
   cleanNewEventModal();
+}
+
+function eventInputsValid() {
+  var inputs = $("#myModal input");
+
+  for (var i = 0; i < inputs.length; i++) {
+    if (!inputs[i].checkValidity()) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 function createPairsLookupMap(pairs) {
@@ -207,54 +218,98 @@ function createBoards(total_number_of_hands, ns_pairs) {
   for (var i = 1; i <= total_number_of_hands; i++) {
     var board_hands = createHands(ns_pairs);
 
-    if (i % 16 == 0) {
-      boards.push(new Board(i, Dealer.WEST, Vulnerable.EW, board_hands));
-    } else if (i % 15 == 0) {
-      boards.push(new Board(i, Dealer.SOUTH, Vulnerable.NS, board_hands));
-    } else if (i % 14 == 0) {
-      boards.push(new Board(i, Dealer.EAST, Vulnerable.NONE, board_hands));
-    } else if (i % 13 == 0) {
-      boards.push(new Board(i, Dealer.NORTH, Vulnerable.ALL, board_hands));
-    } else if (i % 12 == 0) {
-      boards.push(new Board(i, Dealer.WEST, Vulnerable.NS, board_hands));
-    } else if (i % 11 == 0) {
-      boards.push(new Board(i, Dealer.SOUTH, Vulnerable.NONE, board_hands));
-    } else if (i % 10 == 0) {
-      boards.push(new Board(i, Dealer.EAST, Vulnerable.ALL, board_hands));
-    } else if (i % 9 == 0) {
-      boards.push(new Board(i, Dealer.NORTH, Vulnerable.EW, board_hands));
-    } else if (i % 8 == 0) {
-      boards.push(new Board(i, Dealer.WEST, Vulnerable.NONE, board_hands));
-    } else if (i % 7 == 0) {
-      boards.push(new Board(i, Dealer.SOUTH, Vulnerable.ALL, board_hands));
-    } else if (i % 6 == 0) {
-      boards.push(new Board(i, Dealer.EAST, Vulnerable.EW, board_hands));
-    } else if (i % 5 == 0) {
-      boards.push(new Board(i, Dealer.NORTH, Vulnerable.NS, board_hands));
-    } else if (i % 4 == 0) {
-      boards.push(new Board(i, Dealer.WEST, Vulnerable.ALL, board_hands));
-    } else if (i % 3 == 0) {
-      boards.push(new Board(i, Dealer.SOUTH, Vulnerable.EW, board_hands));
-    } else if (i % 2 == 0) {
-      boards.push(new Board(i, Dealer.EAST, Vulnerable.NS, board_hands));
-    } else {
-      boards.push(new Board(i, Dealer.NORTH, Vulnerable.NONE, board_hands));
+    var board_number = i;
+    while (board_number > 16) {
+      board_number -= 16;
+    }
+
+    switch (board_number) {
+      case 1:
+        boards.push(new Board(i, Dealer.NORTH, Vulnerable.NONE, board_hands));
+        break;
+      case 2:
+        boards.push(new Board(i, Dealer.EAST, Vulnerable.NS, board_hands));
+        break;
+      case 3:
+        boards.push(new Board(i, Dealer.SOUTH, Vulnerable.EW, board_hands));
+        break;
+      case 4:
+        boards.push(new Board(i, Dealer.WEST, Vulnerable.ALL, board_hands));
+        break;
+      case 5:
+        boards.push(new Board(i, Dealer.NORTH, Vulnerable.NS, board_hands));
+        break;
+      case 6:
+        boards.push(new Board(i, Dealer.EAST, Vulnerable.EW, board_hands));
+        break;
+      case 7:
+        boards.push(new Board(i, Dealer.SOUTH, Vulnerable.ALL, board_hands));
+        break;
+      case 8:
+        boards.push(new Board(i, Dealer.WEST, Vulnerable.NONE, board_hands));
+        break;
+      case 9:
+        boards.push(new Board(i, Dealer.NORTH, Vulnerable.EW, board_hands));
+        break;
+      case 10:
+        boards.push(new Board(i, Dealer.EAST, Vulnerable.ALL, board_hands));
+        break;
+      case 11:
+        boards.push(new Board(i, Dealer.SOUTH, Vulnerable.NONE, board_hands));
+        break;
+      case 12:
+        boards.push(new Board(i, Dealer.WEST, Vulnerable.NS, board_hands));
+        break;
+      case 13:
+        boards.push(new Board(i, Dealer.NORTH, Vulnerable.ALL, board_hands));
+        break;
+      case 14:
+        boards.push(new Board(i, Dealer.EAST, Vulnerable.NONE, board_hands));
+        break;
+      case 15:
+        boards.push(new Board(i, Dealer.SOUTH, Vulnerable.NS, board_hands));
+        break;
+      case 16:
+        boards.push(new Board(i, Dealer.WEST, Vulnerable.EW, board_hands));
+        break;
+
+      // if (i % 16 == 0) {
+      //   boards.push(new Board(i, Dealer.WEST, Vulnerable.EW, board_hands));
+      // } else if (i % 15 == 0) {
+      //   boards.push(new Board(i, Dealer.SOUTH, Vulnerable.NS, board_hands));
+      // } else if (i % 14 == 0) {
+      //   boards.push(new Board(i, Dealer.EAST, Vulnerable.NONE, board_hands));
+      // } else if (i % 13 == 0) {
+      //   boards.push(new Board(i, Dealer.NORTH, Vulnerable.ALL, board_hands));
+      // } else if (i % 12 == 0) {
+      //   boards.push(new Board(i, Dealer.WEST, Vulnerable.NS, board_hands));
+      // } else if (i % 11 == 0) {
+      //   boards.push(new Board(i, Dealer.SOUTH, Vulnerable.NONE, board_hands));
+      // } else if (i % 10 == 0) {
+      //   boards.push(new Board(i, Dealer.EAST, Vulnerable.ALL, board_hands));
+      // } else if (i % 9 == 0) {
+      //   boards.push(new Board(i, Dealer.NORTH, Vulnerable.EW, board_hands));
+      // } else if (i % 8 == 0) {
+      //   boards.push(new Board(i, Dealer.WEST, Vulnerable.NONE, board_hands));
+      // } else if (i % 7 == 0) {
+      //   boards.push(new Board(i, Dealer.SOUTH, Vulnerable.ALL, board_hands));
+      // } else if (i % 6 == 0) {
+      //   boards.push(new Board(i, Dealer.EAST, Vulnerable.EW, board_hands));
+      // } else if (i % 5 == 0) {
+      //   boards.push(new Board(i, Dealer.NORTH, Vulnerable.NS, board_hands));
+      // } else if (i % 4 == 0) {
+      //   boards.push(new Board(i, Dealer.WEST, Vulnerable.ALL, board_hands));
+      // } else if (i % 3 == 0) {
+      //   boards.push(new Board(i, Dealer.SOUTH, Vulnerable.EW, board_hands));
+      // } else if (i % 2 == 0) {
+      //   boards.push(new Board(i, Dealer.EAST, Vulnerable.NS, board_hands));
+      // } else {
+      //   boards.push(new Board(i, Dealer.NORTH, Vulnerable.NONE, board_hands));
+      // }
     }
   }
 
   return boards;
-}
-
-function eventInputsValid() {
-  var inputs = $("#myModal input");
-
-  for (var i = 0; i < inputs.length; i++) {
-    if (!inputs[i].checkValidity()) {
-      return false;
-    }
-  }
-
-  return true;
 }
 
 function createHands(ns_pairs) {
@@ -318,7 +373,7 @@ function createScoringForms(board, ns_pairs, ew_pairs) {
                     "<div class='col-sm-1'><input class='text-only' type='text' id='" + board.number + "-" + i + "-board' value='" + board.number + "' disabled></div>" +
                     "<div class='col-sm-1'><input class='text-only' type='text' id='" + board.number + "-" + i + "-ns' value='" + hands[i].ns_pair.number + "' disabled></div>" +
                     "<div class='col-sm-1'>" + createDropdown(board.number + '-' + i, "-ew", "E/W", ew_pair_numbers) + "</div>" +
-                    "<div class='col-sm-2'><input type='text' pattern='^[1-7]([Ss]|[Dd]|[Cc]|[Hh]|([Nn]([Tt])?))([Xx])?([Xx])?$' class='form-control uppercase' id='" + board.number + "-" + i + "-contract'  oninput='isRowComplete(\"" + board.number + "-" + i + "\")' required></div>" +
+                    "<div class='col-sm-2'><input type='text' pattern='^[1-7]([Ss]|[Dd]|[Cc]|[Hh]|([Nn]([Tt])?))([Xx*])?([Xx*])?$' class='form-control uppercase' id='" + board.number + "-" + i + "-contract'  oninput='isRowComplete(\"" + board.number + "-" + i + "\")' required></div>" +
                     "<div class='col-sm-2'>" + createDropdown(board.number + '-' + i, "-by", "By", ["North", "South", "East", "West"]) + "</div>" +
                     "<div class='col-sm-2'>" + createDropdown(board.number + '-' + i, "-tricks", "Tricks", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]) + "</div>" +
                     "<div class='col-sm-3'>" +
@@ -339,6 +394,9 @@ function createDropdown(board_hand_id, dropdown_id, text, values) {
   for (var i = 0; i < values.length; i++) {
     dropdown_values += "<option value='" + values[i] + "'>" + values[i] + "</option>";
   }
+  if (dropdown_id === "-ew") {
+    dropdown_values += "<option value='N/A'>N/A</option>";
+  }
 
   return "<select id='" + board_hand_id + dropdown_id + "' class='selectpicker btn-default' onchange='isRowComplete(\"" + board_hand_id + "\")' required>" +
             "<option value='' disabled selected>" + text + "</option>" +
@@ -349,7 +407,24 @@ function createDropdown(board_hand_id, dropdown_id, text, values) {
 function isRowComplete(board_hand_id) {
   var currentlyActive = $(document.activeElement);
 
-  if (isValid(board_hand_id + "-ew") && isValid(board_hand_id + "-contract") && isValid(board_hand_id + "-by") && isValid(board_hand_id + "-tricks")) {
+  if ($("#" + board_hand_id + "-ew").val() === "N/A") {
+    // TODO Clear and disable the rest of the row.  Scoring is allowed for the board!
+    $("#" + board_hand_id + "-contract").val('');
+    $("#" + board_hand_id + "-by").val('');
+    $("#" + board_hand_id + "-tricks").val('');
+    $("#" + board_hand_id + "-nsscore").val('');
+    $("#" + board_hand_id + "-ewscore").val('');
+    $("#" + board_hand_id + "-form .selectpicker").selectpicker('refresh');
+
+    var ids = board_hand_id.split("-");
+    var board_id = ids[0];
+    var hand_id = ids[1];
+    delete thisEvent.boards[board_id-1].hands[hand_id].ew_score;
+    delete thisEvent.boards[board_id-1].hands[hand_id].ns_score;
+    delete thisEvent.boards[board_id-1].hands[hand_id].ew_pair;
+  }
+
+  if ($("#" + board_hand_id + "-ew").val() === "N/A" || (isValid(board_hand_id + "-ew") && isValid(board_hand_id + "-contract") && isValid(board_hand_id + "-by") && isValid(board_hand_id + "-tricks"))) {
     calculateScore(board_hand_id);
   }
 
@@ -361,51 +436,18 @@ function isValid(board_hand_id) {
 }
 
 function calculateScore(full_board_hand_id) {
-  var ns_number = $("#" + full_board_hand_id + "-ns").val();
-  var ew_number = $("#" + full_board_hand_id + "-ew").val();
-  var contract = $("#" + full_board_hand_id + "-contract").val().toUpperCase();
-  var declarer = $("#" + full_board_hand_id + "-by").val();
-  var taken_num_tricks = $("#" + full_board_hand_id + "-tricks").val();
-
-  var doubled = contract.indexOf("X") > 0;
-  var redoubled = contract.indexOf("XX") > 0;
-
   var ids = full_board_hand_id.split("-");
   var board_id = parseInt(ids[0]) - 1;
   var hand_id = parseInt(ids[1]);
   var board = thisEvent.boards[board_id];
 
-  var contract_num_tricks = parseInt(contract.charAt(0));
-  var difference_num_tricks = (taken_num_tricks - 6) - contract_num_tricks;
+  calculateScoreForBoardHand(full_board_hand_id, board_id, hand_id, board);
 
-  thisEvent.boards[board_id].hands[hand_id].ew_pair = thisEvent.ew_pairs[ew_number];
-
-  if (difference_num_tricks < 0) {
-    var vulnerable = isDeclarerVulnerable(declarer, board);
-    var penalty_points = calculatePenaltyPoints(difference_num_tricks * -1, vulnerable, doubled, redoubled);
-
-    if (declarer === "North" || declarer === "South") {
-      setScores(full_board_hand_id, board_id, hand_id, penalty_points * -1);
-    } else {
-      setScores(full_board_hand_id, board_id, hand_id, penalty_points);
-    }
-  } else {
-    var vulnerable = isDefenderVulnerable(declarer, board);
-    var suit = getSuit(contract);
-    var victory_points = calculateVictoryPoints(contract_num_tricks, difference_num_tricks, suit, vulnerable, doubled, redoubled);
-
-    if (declarer === "North" || declarer === "South") {
-      setScores(full_board_hand_id, board_id, hand_id, victory_points);
-    } else {
-      setScores(full_board_hand_id, board_id, hand_id, victory_points * -1);
-    }
-  }
-
-  if (allHandsScored(thisEvent.boards[board_id].hands)) {
+  if (allHandsScored(board.hands)) {
     $("#heading" + (board_id + 1)).removeClass("alert-danger");
     $("#heading" + (board_id + 1)).addClass("alert-success");
 
-    calculateMatchPointsForBoard(thisEvent.boards[board_id]);
+    calculateMatchPointsForBoard(board);
     var ns_matchpoint_table = createMatchPointTable(true);
     var ew_matchpoint_table = createMatchPointTable(false);
     var ns_rankings_table = createRankingTable(true);
@@ -419,6 +461,52 @@ function calculateScore(full_board_hand_id) {
 
     $("#scores-well").removeClass("hidden");
   }
+}
+
+function calculateScoreForBoardHand(full_board_hand_id, board_id, hand_id, board) {
+  var ns_number = $("#" + full_board_hand_id + "-ns").val();
+  var ew_number = $("#" + full_board_hand_id + "-ew").val();
+
+  if (ew_number === 'N/A') {
+    thisEvent.boards[board_id].hands[hand_id].ew_pair = "N/A";
+  } else {
+    var contract = $("#" + full_board_hand_id + "-contract").val().toUpperCase();
+    var declarer = $("#" + full_board_hand_id + "-by").val();
+    var taken_num_tricks = $("#" + full_board_hand_id + "-tricks").val();
+
+    var doubled = contract.indexOf("X") > 0;
+    var redoubled = contract.indexOf("XX") > 0;
+
+    var contract_num_tricks = parseInt(contract.charAt(0));
+    var numOddTricks = (taken_num_tricks - 6) - contract_num_tricks;
+
+    thisEvent.boards[board_id].hands[hand_id].ew_pair = thisEvent.ew_pairs[ew_number];
+
+    if (numOddTricks < 0) {
+      // Failed to meet the contract, calculate penalty points
+      var vulnerable = isDeclarerVulnerable(declarer, board);
+      var penalty_points = calculatePenaltyPoints(numOddTricks * -1, vulnerable, doubled, redoubled);
+
+      if (declarer === "North" || declarer === "South") {
+        setScores(full_board_hand_id, board_id, hand_id, penalty_points * -1);
+      } else {
+        setScores(full_board_hand_id, board_id, hand_id, penalty_points);
+      }
+    } else {
+      // Met the contract, calculate victory points
+      //var vulnerable = isDefenderVulnerable(declarer, board);
+      var vulnerable = isDeclarerVulnerable(declarer, board);
+      var suit = getSuit(contract);
+      var victory_points = calculateVictoryPoints(contract_num_tricks, numOddTricks, suit, vulnerable, doubled, redoubled);
+
+      if (declarer === "North" || declarer === "South") {
+        setScores(full_board_hand_id, board_id, hand_id, victory_points);
+      } else {
+        setScores(full_board_hand_id, board_id, hand_id, victory_points * -1);
+      }
+    }
+  }
+
 }
 
 function isDeclarerVulnerable(declarer, board) {
@@ -463,10 +551,10 @@ function getSuit(contract) {
   }
 }
 
-function calculatePenaltyPoints(difference_num_tricks, vulnerable, doubled, redoubled) {
+function calculatePenaltyPoints(numOddTricks, vulnerable, doubled, redoubled) {
   var penalty_points = 0;
 
-  for (var i = 1; i <= difference_num_tricks; i++) {
+  for (var i = 1; i <= numOddTricks; i++) {
     if (redoubled) {
       penalty_points += getRedoubledPenalty(i, vulnerable);
     } else if (doubled) {
@@ -650,7 +738,8 @@ function setScores(full_board_hand_id, board_id, hand_id, score) {
 
 function allHandsScored(hands) {
   for (var i = 0; i < hands.length; i++) {
-    if (hands[i].ns_score === undefined) {
+    if (hands[i].ew_pair != 'N/A' && hands[i].ns_score === undefined) {
+      console.log(hands[i]);
       return false;
     }
   }
@@ -662,7 +751,9 @@ function calculateMatchPointsForBoard(board) {
   // create sorted array of tuples
   var ns_pairs_to_scores = {};
   for (var i = 0; i < board.hands.length; i++) {
-    ns_pairs_to_scores[board.hands[i].ns_pair.number] = board.hands[i].ns_score;
+    if (board.hands[i].ew_pair != 'N/A') {
+      ns_pairs_to_scores[board.hands[i].ns_pair.number] = board.hands[i].ns_score;
+    }
   }
   var sortedNsPairScoreTuples = sortByValue(ns_pairs_to_scores);
 
@@ -672,7 +763,9 @@ function calculateMatchPointsForBoard(board) {
 
   var ew_pairs_to_scores = {};
   for (var i = 0; i < board.hands.length; i++) {
-    ew_pairs_to_scores[board.hands[i].ew_pair.number] = board.hands[i].ew_score;
+    if (board.hands[i].ew_pair != 'N/A') {
+      ew_pairs_to_scores[board.hands[i].ew_pair.number] = board.hands[i].ew_score;
+    }
   }
   var sortedEwPairScoreTuples = sortByValue(ew_pairs_to_scores);
 
@@ -691,20 +784,20 @@ function sortByValue(obj) {
 
 function calculateMatchPoints(sortedPairScoreTuples) {
   var matchpoints = {};
+  var nextMpScore = (sortedPairScoreTuples.length * 2) - 2; // max mp score
 
-  var next_score = (sortedPairScoreTuples.length - 1) * 2; // max mp score
   for (var i = 0; i < sortedPairScoreTuples.length; i++) {
-    var thisScore = sortedPairScoreTuples[i][1];
+    var thisPairScore = sortedPairScoreTuples[i][1];
     if (sortedPairScoreTuples[i+1] === undefined) {
-      var nextScore = undefined;
+      var nextPairScore = undefined;
     } else {
-      var nextScore = sortedPairScoreTuples[i+1][1];
+      var nextPairScore = sortedPairScoreTuples[i+1][1];
     }
 
-    if (nextScore === undefined) {
-      matchpoints[sortedPairScoreTuples[i][0]] = next_score;
+    if (nextPairScore === undefined) {
+      matchpoints[sortedPairScoreTuples[i][0]] = nextMpScore;
     } else {
-      if (thisScore === nextScore) {
+      if (thisPairScore === nextPairScore) {
         // tie!
         var tied_pairs = [];
         tied_pairs.push(sortedPairScoreTuples[i][0]);
@@ -712,7 +805,7 @@ function calculateMatchPoints(sortedPairScoreTuples) {
 
         var skips = 2;
         while (true) {
-          if (sortedPairScoreTuples[i+skips] != undefined && thisScore === sortedPairScoreTuples[i+skips][1]) {
+          if (sortedPairScoreTuples[i+skips] != undefined && thisPairScore === sortedPairScoreTuples[i+skips][1]) {
             tied_pairs.push(sortedPairScoreTuples[i+skips][0]);
             skips++;
           } else {
@@ -721,14 +814,18 @@ function calculateMatchPoints(sortedPairScoreTuples) {
           }
         }
 
-        next_score -= 1; // only score one point instead of two in a tie
+        var sharedMps = 0;
         for (var j = 0; j < tied_pairs.length; j++) {
-          matchpoints[tied_pairs[j]] = next_score;
+          sharedMps += nextMpScore;
+          nextMpScore -= 2;
         }
-        next_score = (next_score + 1) - (tied_pairs.length * 2);
+
+        for (var j = 0; j < tied_pairs.length; j++) {
+          matchpoints[tied_pairs[j]] = (sharedMps / tied_pairs.length);
+        }
       } else {
-        matchpoints[sortedPairScoreTuples[i][0]] = next_score;
-        next_score -= 2;
+        matchpoints[sortedPairScoreTuples[i][0]] = nextMpScore;
+        nextMpScore -= 2;
       }
     }
   }
