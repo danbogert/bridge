@@ -64,9 +64,9 @@ var thisEvent;
 $(function() {
   $("#masthead").hide();
 
-  $('#date').datepicker({
-    autoclose: true
-  });
+  // $('#date').datepicker({
+  //   autoclose: true
+  // });
 
   $(".dropdown-menu li a").click(function() {
     $(this).parents(".dropdown").find('.btn').html($(this).text() + ' <span class="caret"></span>');
@@ -131,7 +131,7 @@ function cleanNewEventModal() {
   $("#pair1-south").val("");
   $("#pair1-east").val("");
   $("#pair1-west").val("");
-  $("#date input").val("");
+  // $("#date input").val("");
   // datepicker
   // movement
   // hands per table
