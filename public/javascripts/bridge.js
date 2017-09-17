@@ -334,26 +334,46 @@ function createScoringForms(board, ns_pairs, ew_pairs) {
   var content = "";
 
   for (var i = 0; i < hands.length; i++) {
+    var board_hand_id = board.number + '-' + i;
     var colored_row = (i % 2 == 0) ? " colored-row " : "";
+    
     content += "<div class='row" + colored_row + "'>" +
-                  "<form id='" + board.number + "-" + i + "-form' action='javascript:void(0);'>" +
-                    "<div class='col-sm-1'><input class='text-only' type='text' id='" + board.number + "-" + i + "-ns' value='" + hands[i].ns_pair.number + "' disabled></div>" +
-                    "<div class='col-sm-1'>" + createDropdown(board.number + '-' + i, "-ew", "E/W", ew_pair_numbers) + "</div>" +
-                    "<div class='col-sm-2'><input type='text' pattern='^[1-7]([Ss]|[Dd]|[Cc]|[Hh]|([Nn]([Tt])?))([Xx*])?([Xx*])?$' class='form-control uppercase' id='" + board.number + "-" + i + "-contract'  oninput='isRowComplete(\"" + board.number + "-" + i + "\")' required></div>" +
-                    "<div class='col-sm-2'>" + createDropdown(board.number + '-' + i, "-by", "By", ["North", "South", "East", "West"]) + "</div>" +
-                    "<div class='col-sm-2'>" + createDropdown(board.number + '-' + i, "-tricks", "Tricks", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]) + "</div>" +
+                  "<form id='" + board_hand_id + "-form' action='javascript:void(0);'>" +
+                    "<div class='col-sm-1'><input class='text-only' type='text' id='" + board_hand_id + "-ns' value='" + hands[i].ns_pair.number + "' disabled></div>" +
+                    "<div class='col-sm-1'>" + createDropdown(board_hand_id, "-ew", "E/W", ew_pair_numbers) + "</div>" +
+                    "<div class='col-sm-2'><input type='text' pattern='^[1-7]([Ss]|[Dd]|[Cc]|[Hh]|([Nn]([Tt])?))([Xx*])?([Xx*])?$' class='form-control uppercase' id='" + board_hand_id + "-contract'  oninput='isRowComplete(\"" + board_hand_id + "\")' required></div>" +
+                    "<div class='col-sm-2'>" + createDropdown(board_hand_id, "-by", "By", ["North", "South", "East", "West"]) + "</div>" +
+                    "<div class='col-sm-2'>" + createDropdown(board_hand_id, "-tricks", "Tricks", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]) + "</div>" +
                     "<div class='col-sm-3'>" +
                       "<div class='row'>" +
-                        "<div class='col-sm-6'><input class='text-only' type='text' id='" + board.number + "-" + i + "-nsscore' disabled></div>" +
-                        "<div class='col-sm-6'><input class='text-only' type='text' id='" + board.number + "-" + i + "-ewscore' disabled></div>" +
+                        "<div class='col-sm-6'><input class='text-only' type='text' id='" + board_hand_id + "-nsscore' disabled></div>" +
+                        "<div class='col-sm-6'><input class='text-only' type='text' id='" + board_hand_id + "-ewscore' disabled></div>" +
                       "</div>" +
                     "</div>" +
-                    "<div class='col-sm-1'><input class='text-only' type='text' id='" + board.number + "-" + i + "-explain' value='?' disabled></div>" +
+                    "<div class='col-sm-1'>" +
+                      "<button id='" + board_hand_id + "-explain' onclick='explainScore(\"" + board_hand_id + "\")' type='button' class='btn btn-default btn-lg centered-btn'>" +
+                        "<span class='glyphicon glyphicon-question-sign' aria-hidden='true'></span>" +
+                      "</button>" +
+                    "</div>" +
                   "</form>" +
                 "</div>";
   }
 
   return content;
+}
+
+function explainScore(board_hand_id) {
+  if ($("#" + board_hand_id + "-ew").val() === "N/A") {
+    console.log("N/A -- no score");
+    return;
+  }
+
+  if (!isValid(board_hand_id + "-ew") || !isValid(board_hand_id + "-contract") || !isValid(board_hand_id + "-by") || !isValid(board_hand_id + "-tricks")) {
+    console.log("Row not complete -- no score");
+    return;
+  }
+
+  console.log("Row complete -- get score");
 }
 
 function createDropdown(board_hand_id, dropdown_id, text, values) {
@@ -485,7 +505,7 @@ function calculateScoreForBoardHand(full_board_hand_id, board_id, hand_id, board
 
     if (numOddTricks < 0) {
       // Failed to meet the contract, calculate penalty points
-      var vulnerable = isDeclarerVulnerable(declarer, board);
+      var vulnerable = isVulnerable(declarer, board);
       var penalty_points = calculatePenaltyPoints(numOddTricks * -1, vulnerable, doubled, redoubled);
 
       if (declarer === "North" || declarer === "South") {
@@ -495,8 +515,7 @@ function calculateScoreForBoardHand(full_board_hand_id, board_id, hand_id, board
       }
     } else {
       // Met the contract, calculate victory points
-      //var vulnerable = isDefenderVulnerable(declarer, board);
-      var vulnerable = isDeclarerVulnerable(declarer, board);
+      var vulnerable = isVulnerable(declarer, board);
       var suit = getSuit(contract);
       var victory_points = calculateVictoryPoints(contract_num_tricks, numOddTricks, suit, vulnerable, doubled, redoubled);
 
@@ -507,10 +526,9 @@ function calculateScoreForBoardHand(full_board_hand_id, board_id, hand_id, board
       }
     }
   }
-
 }
 
-function isDeclarerVulnerable(declarer, board) {
+function isVulnerable(declarer, board) {
   if (board.vulnerable === Vulnerable.ALL) {
     return true;
   } else if (board.vulnerable === Vulnerable.NONE) {
@@ -518,20 +536,6 @@ function isDeclarerVulnerable(declarer, board) {
   } else if (board.vulnerable === Vulnerable.NS && (declarer === "North" || declarer === "South")) {
     return true;
   } else if (board.vulnerable === Vulnerable.EW && (declarer === "East" || declarer === "West")) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-function isDefenderVulnerable(declarer, board) {
-  if (board.vulnerable === Vulnerable.ALL) {
-    return true;
-  } else if (board.vulnerable === Vulnerable.NONE) {
-    return false;
-  } else if (board.vulnerable === Vulnerable.NS && (declarer === "East" || declarer === "West")) {
-    return true;
-  } else if (board.vulnerable === Vulnerable.EW && (declarer === "North" || declarer === "South")) {
     return true;
   } else {
     return false;
@@ -834,9 +838,9 @@ function calculateMatchPoints(sortedPairScoreTuples) {
 }
 
 function createMatchPointTable(ns) {
+
   var num_pairs = ns ? Object.keys(thisEvent.ns_pairs).length : Object.keys(thisEvent.ew_pairs).length;
   var single_hand_high_score = (thisEvent.boards[0].hands.length - 1) * 2;
-  var best_possible_score = single_hand_high_score * thisEvent.boards.length;
 
   var matchpoint_table = "<table><tr class='thick-border-bottom'><th class='small-fixed-col'>Pair</th>";
   for (var i = 1; i <= thisEvent.boards.length; i++) {
@@ -845,6 +849,7 @@ function createMatchPointTable(ns) {
   matchpoint_table += "<th class='small-fixed-col'>Total</th><th class='med-fixed-col'>%</th><th class='large-fixed-col'>Name</th></tr>";
 
   for (var pair = 1; pair <= num_pairs; pair++) {
+    var number_of_hands_played = 0;
     var border_bottom = "";
     if (pair === num_pairs) {
       border_bottom = " class='border-bottom'";
@@ -867,11 +872,13 @@ function createMatchPointTable(ns) {
         continue;
       }
 
+      number_of_hands_played++;
       total_matchpoints += board_matchpoints;
       matchpoint_table += "<td>" + board_matchpoints + "</td>";
     }
 
     var names = ns ? (thisEvent.ns_pairs[pair].north + " & " + thisEvent.ns_pairs[pair].south) : (thisEvent.ew_pairs[pair].east + " & " + thisEvent.ew_pairs[pair].west);
+    var best_possible_score = single_hand_high_score * number_of_hands_played;
     matchpoint_table += "<td class='black-border-sides'>" + total_matchpoints + "</td><td class='black-border-right'>" + ((total_matchpoints / best_possible_score) * 100).toFixed(2) + "%</td><td>" + names + "</td></tr>";
   }
 
@@ -881,12 +888,13 @@ function createMatchPointTable(ns) {
 function createRankingTable(ns) {
   var num_pairs = ns ? Object.keys(thisEvent.ns_pairs).length : Object.keys(thisEvent.ew_pairs).length;
   var single_hand_high_score = (thisEvent.boards[0].hands.length - 1) * 2;
-  var best_possible_score = single_hand_high_score * thisEvent.boards.length;
+  //var best_possible_score = single_hand_high_score * thisEvent.boards.length;
   var final_scores = {};
 
   for (var pair = 1; pair <= num_pairs; pair++) {
-
     var total_matchpoints = 0;
+    var number_of_hands_played = 0;
+
     for (var board_index = 0; board_index < thisEvent.boards.length; board_index++) {
       // if scores not entered for this board yet, no score
       var board = thisEvent.boards[board_index];
@@ -900,9 +908,11 @@ function createRankingTable(ns) {
         continue;
       }
 
+      number_of_hands_played++;
       total_matchpoints += board_matchpoints;
     }
 
+    var best_possible_score = single_hand_high_score * number_of_hands_played;
     final_scores[pair] = (total_matchpoints / best_possible_score) * 100;
   }
 
