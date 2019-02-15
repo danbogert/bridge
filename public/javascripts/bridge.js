@@ -139,7 +139,7 @@ function cleanNewEventModal() {
 
 function createEvent() {
   if (!eventInputsValid()) {
-    console.log("inputs not valid!")
+    console.log("inputs not valid -- event not created")
     // add invalid class?
     return;
   }
@@ -336,7 +336,7 @@ function createScoringForms(board, ns_pairs, ew_pairs) {
   for (var i = 0; i < hands.length; i++) {
     var board_hand_id = board.number + '-' + i;
     var colored_row = (i % 2 == 0) ? " colored-row " : "";
-    
+
     content += "<div class='row" + colored_row + "'>" +
                   "<form id='" + board_hand_id + "-form' action='javascript:void(0);'>" +
                     "<div class='col-sm-1'><input class='text-only' type='text' id='" + board_hand_id + "-ns' value='" + hands[i].ns_pair.number + "' disabled></div>" +
@@ -393,8 +393,10 @@ function createDropdown(board_hand_id, dropdown_id, text, values) {
 
 function isRowComplete(board_hand_id) {
   var currentlyActive = $(document.activeElement);
+  var noEastWestPair = $("#" + board_hand_id + "-ew").val() === "N/A";
+  var boardHandPassed = $("#" + board_hand_id + "-contract").val().toUpperCase().startsWith("PASS");
 
-  if ($("#" + board_hand_id + "-ew").val() === "N/A") {
+  if (noEastWestPair) {
     // TODO Clear and disable the rest of the row.  Scoring is allowed for the board!
     $("#" + board_hand_id + "-contract").val('');
     $("#" + board_hand_id + "-by").val('');
@@ -409,9 +411,25 @@ function isRowComplete(board_hand_id) {
     delete thisEvent.boards[board_id-1].hands[hand_id].ew_score;
     delete thisEvent.boards[board_id-1].hands[hand_id].ns_score;
     delete thisEvent.boards[board_id-1].hands[hand_id].ew_pair;
+  } else if (boardHandPassed) {
+    // TODO clear and disable the rest of the row, scoring is allowed for the board
+    $("#" + board_hand_id + "-by").val('');
+    $("#" + board_hand_id + "-tricks").val('');
+    $("#" + board_hand_id + "-nsscore").val('');
+    $("#" + board_hand_id + "-ewscore").val('');
+    $("#" + board_hand_id + "-form .selectpicker").selectpicker('refresh');
+
+    var ids = board_hand_id.split("-");
+    var board_id = ids[0];
+    var hand_id = ids[1];
+    delete thisEvent.boards[board_id-1].hands[hand_id].ew_score;
+    delete thisEvent.boards[board_id-1].hands[hand_id].ns_score;
+    delete thisEvent.boards[board_id-1].hands[hand_id].ew_pair;
   }
 
-  if ($("#" + board_hand_id + "-ew").val() === "N/A" || (isValid(board_hand_id + "-ew") && isValid(board_hand_id + "-contract") && isValid(board_hand_id + "-by") && isValid(board_hand_id + "-tricks"))) {
+  // TODO add another check to see if the hand was PASSED, it would also count as complete
+
+  if (noEastWestPair || boardHandPassed || (isValid(board_hand_id + "-ew") && isValid(board_hand_id + "-contract") && isValid(board_hand_id + "-by") && isValid(board_hand_id + "-tricks"))) {
     calculateScore(board_hand_id);
   }
 
@@ -487,11 +505,14 @@ function copyEwPairsToRemainingBoardsAtTable(first_board_id) {
 function calculateScoreForBoardHand(full_board_hand_id, board_id, hand_id, board) {
   var ns_number = $("#" + full_board_hand_id + "-ns").val();
   var ew_number = $("#" + full_board_hand_id + "-ew").val();
+  var contract = $("#" + full_board_hand_id + "-contract").val().toUpperCase();
 
   if (ew_number === 'N/A') {
     thisEvent.boards[board_id].hands[hand_id].ew_pair = "N/A";
+  } else if (contract.startsWith("PASS")) {
+    thisEvent.boards[board_id].hands[hand_id].ew_pair = thisEvent.ew_pairs[ew_number];
+    setScores(full_board_hand_id, board_id, hand_id, 0);
   } else {
-    var contract = $("#" + full_board_hand_id + "-contract").val().toUpperCase();
     var declarer = $("#" + full_board_hand_id + "-by").val();
     var taken_num_tricks = $("#" + full_board_hand_id + "-tricks").val();
 
@@ -732,7 +753,10 @@ function setScores(full_board_hand_id, board_id, hand_id, score) {
   thisEvent.boards[board_id].hands[hand_id].ew_score = score * -1;
 
   // Only show the positive score, clear the other
-  if (score > 0) {
+  if (score === 0) {
+    $("#" + full_board_hand_id + "-nsscore").val(score);
+    $("#" + full_board_hand_id + "-ewscore").val(score);
+  } else if (score > 0) {
     $("#" + full_board_hand_id + "-nsscore").val(score);
     $("#" + full_board_hand_id + "-ewscore").val("");
   } else {

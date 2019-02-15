@@ -6,13 +6,15 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
-    "body-parser": "~1.15.1",
-    "cookie-parser": "~1.4.3",
-    "debug": "~2.2.0",
-    "ejs": "~2.4.1",
-    "express": "~4.13.4",
-    "mongodb": "^2.2.9",
-    "morgan": "~1.7.0",
-    "serve-favicon": "~2.3.0"
+    "body-parser": "^1.18.3",
+    "cookie-parser": "^1.4.3",
+    "debug": "^2.2.0",
+    "ejs": "^2.4.2",
+    "express": "^4.16.4",
+    "http": "0.0.0",
+    "mongodb": "^2.2.36",
+    "morgan": "^1.9.1",
+    "path": "^0.12.7",
+    "serve-favicon": "^2.5.0"
   }
 }
