@@ -62,22 +62,28 @@ var Suit = {
 var thisEvent;
 
 $(function() {
-  $("#masthead").hide();
+    // $('#date').datepicker({
+    //   autoclose: true
+    // });
 
-  // $('#date').datepicker({
-  //   autoclose: true
-  // });
+    $(".dropdown-menu li a").click(function() {
+      $(this).parents(".dropdown").find('.btn').html($(this).text() + ' <span class="caret"></span>');
+    });
 
-  $(".dropdown-menu li a").click(function() {
-    $(this).parents(".dropdown").find('.btn').html($(this).text() + ' <span class="caret"></span>');
-  });
+    $("#title_link").click(showCoverPage);
+    $("#add-ns-pair-button").click(addNorthSouthPair);
+    $("#add-ew-pair-button").click(addEastWestPair);
+    $("#cancel-event-button").click(cleanNewEventModal);
+    $("#create-event-button").click(createEvent);
+    $('#print-scores-button').click(printScores);
 
-  $("#title_link").click(showCoverPage);
-  $("#add-ns-pair-button").click(addNorthSouthPair);
-  $("#add-ew-pair-button").click(addEastWestPair);
-  $("#cancel-event-button").click(cleanNewEventModal);
-  $("#create-event-button").click(createEvent);
-  $('#print-scores-button').click(printScores);
+    var retrievedEvent = JSON.parse(localStorage.getItem('bridgeEvent'));
+
+    if (typeof retrievedEvent !== 'undefined' && retrievedEvent != null) {
+      createPartialEvent(retrievedEvent);
+    } else {
+      $("#masthead").hide();
+  }
 });
 
 function showCoverPage() {
@@ -144,6 +150,8 @@ function createEvent() {
     return;
   }
 
+  $("#scores-well").addClass("hidden");
+  $("#final_score_tables_div").empty();
   $("#myModal").modal('toggle');
   $(".nav li a").blur();
 
@@ -189,6 +197,82 @@ function createEvent() {
   $("#masthead").show();
 
   cleanNewEventModal();
+
+  localStorage.setItem('bridgeEvent', JSON.stringify(thisEvent));
+}
+
+function createPartialEvent(retrievedEvent) {
+  var ns_pairs = [];
+  var i = 1;
+  for (var pair = retrievedEvent.ns_pairs[i]; typeof pair != 'undefined'; pair = retrievedEvent.ns_pairs[++i] ) {
+    var north = retrievedEvent.ns_pairs[i].north;
+    var south = retrievedEvent.ns_pairs[i].south;
+    ns_pairs.push(new NorthSouthPair(i, north, south));
+  }
+
+  var ew_pairs = [];
+  i = 1;
+  for (var pair = retrievedEvent.ew_pairs[i]; typeof pair != 'undefined'; pair = retrievedEvent.ew_pairs[++i] ) {
+    var east = retrievedEvent.ew_pairs[i].east;
+    var west = retrievedEvent.ew_pairs[i].west;
+    ew_pairs.push(new EastWestPair(i, east, west));
+  }
+
+  var number_boards_per_table = retrievedEvent.boardsPerTable;
+  var number_of_tables = Math.max(ns_pairs.length, ew_pairs.length);
+  var total_number_of_boards = number_boards_per_table * number_of_tables;
+
+  var boards = createBoards(total_number_of_boards, ns_pairs);
+
+  thisEvent = new BridgeEvent(boards);
+  thisEvent.ns_pairs = createPairsLookupMap(ns_pairs);
+  thisEvent.ew_pairs = createPairsLookupMap(ew_pairs);
+  thisEvent.boardsPerTable = number_boards_per_table;
+
+  createScoringAccordion(ns_pairs, ew_pairs);
+
+  $(".dropdown-menu li a").click(function() {
+    $(this).parents(".dropdown").find('.btn').html($(this).text() + ' <span class="caret"></span>');
+  });
+
+  $('.selectpicker').selectpicker({
+    style: 'btn-default',
+    width: '100%',
+  });
+
+  $("#cover-page").hide();
+  $("#masthead").show();
+
+  cleanNewEventModal();
+
+  fillCompletedRows(retrievedEvent);
+}
+
+function fillCompletedRows(retrievedEvent) {
+  for (var i = 0; i < retrievedEvent.boards.length; i++) {
+    var board = retrievedEvent.boards[i];
+    for (var j = 0; j < board.hands.length; j++) {
+      var hand = board.hands[j];
+
+      var board_hand_id = board.number + "-" + j;
+      if (hand.ew_pair == "N/A") {
+        $("#" + board_hand_id + "-ew").val(hand.ew_pair);
+      } else {
+        if (typeof hand.ew_score == 'undefined') {
+          continue;
+        }
+
+        $("#" + board_hand_id + "-ew").val(hand.ew_pair.number);
+        $("#" + board_hand_id + "-contract").val(hand.contract);
+        $("#" + board_hand_id + "-by").val(hand.by);
+        $("#" + board_hand_id + "-tricks").val(hand.tricks);
+      }
+
+      $("#" + board_hand_id + "-form .selectpicker").selectpicker('refresh');
+
+      isRowComplete(board_hand_id);
+    }
+  }
 }
 
 function eventInputsValid() {
@@ -394,6 +478,7 @@ function createDropdown(board_hand_id, dropdown_id, text, values) {
 function isRowComplete(board_hand_id) {
   var currentlyActive = $(document.activeElement);
   var noEastWestPair = $("#" + board_hand_id + "-ew").val() === "N/A";
+  var eastWestPairExists = $("#" + board_hand_id + "-ew").val() != null;
   var boardHandPassed = $("#" + board_hand_id + "-contract").val().toUpperCase().startsWith("PASS");
 
   if (noEastWestPair) {
@@ -411,7 +496,7 @@ function isRowComplete(board_hand_id) {
     delete thisEvent.boards[board_id-1].hands[hand_id].ew_score;
     delete thisEvent.boards[board_id-1].hands[hand_id].ns_score;
     delete thisEvent.boards[board_id-1].hands[hand_id].ew_pair;
-  } else if (boardHandPassed) {
+  } else if (boardHandPassed && eastWestPairExists) {
     // TODO clear and disable the rest of the row, scoring is allowed for the board
     $("#" + board_hand_id + "-by").val('');
     $("#" + board_hand_id + "-tricks").val('');
@@ -429,8 +514,9 @@ function isRowComplete(board_hand_id) {
 
   // TODO add another check to see if the hand was PASSED, it would also count as complete
 
-  if (noEastWestPair || boardHandPassed || (isValid(board_hand_id + "-ew") && isValid(board_hand_id + "-contract") && isValid(board_hand_id + "-by") && isValid(board_hand_id + "-tricks"))) {
+  if (noEastWestPair || (boardHandPassed && eastWestPairExists) || (isValid(board_hand_id + "-ew") && isValid(board_hand_id + "-contract") && isValid(board_hand_id + "-by") && isValid(board_hand_id + "-tricks"))) {
     calculateScore(board_hand_id);
+    localStorage.setItem('bridgeEvent', JSON.stringify(thisEvent));
   }
 
   currentlyActive.focus();
@@ -498,6 +584,13 @@ function copyEwPairsToRemainingBoardsAtTable(first_board_id) {
     for (var j = 0; j < number_pairs_per_board; j++) {
       $("#" + i + "-" + j + "-ew").val(ew_pair_numbers[j]);
       $("#" + i + "-" + j + "-form .selectpicker").selectpicker('refresh');
+
+      thisEvent.boards[i-1].hands[j].ew_pair = ew_pair_numbers[j];
+      if (ew_pair_numbers[j] === 'N/A') {
+        thisEvent.boards[i-1].hands[j].contract = "";
+        thisEvent.boards[i-1].hands[j].by = "";
+        thisEvent.boards[i-1].hands[j].tricks = "";
+      }
     }
   }
 }
@@ -509,8 +602,14 @@ function calculateScoreForBoardHand(full_board_hand_id, board_id, hand_id, board
 
   if (ew_number === 'N/A') {
     thisEvent.boards[board_id].hands[hand_id].ew_pair = "N/A";
+    thisEvent.boards[board_id].hands[hand_id].contract = "";
+    thisEvent.boards[board_id].hands[hand_id].by = "";
+    thisEvent.boards[board_id].hands[hand_id].tricks = "";
   } else if (contract.startsWith("PASS")) {
     thisEvent.boards[board_id].hands[hand_id].ew_pair = thisEvent.ew_pairs[ew_number];
+    thisEvent.boards[board_id].hands[hand_id].contract = "PASS";
+    thisEvent.boards[board_id].hands[hand_id].by = "";
+    thisEvent.boards[board_id].hands[hand_id].tricks = "";
     setScores(full_board_hand_id, board_id, hand_id, 0);
   } else {
     var declarer = $("#" + full_board_hand_id + "-by").val();
@@ -523,6 +622,9 @@ function calculateScoreForBoardHand(full_board_hand_id, board_id, hand_id, board
     var numOddTricks = (taken_num_tricks - 6) - contract_num_tricks;
 
     thisEvent.boards[board_id].hands[hand_id].ew_pair = thisEvent.ew_pairs[ew_number];
+    thisEvent.boards[board_id].hands[hand_id].contract = contract;
+    thisEvent.boards[board_id].hands[hand_id].by = declarer;
+    thisEvent.boards[board_id].hands[hand_id].tricks = taken_num_tricks;
 
     if (numOddTricks < 0) {
       // Failed to meet the contract, calculate penalty points
