@@ -29,8 +29,8 @@ table {
 }
 
 td {
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding-top: 5px;
+  padding-bottom: 5px;
   text-align: center;
 }
 
@@ -39,11 +39,11 @@ tr:nth-child(even) {
 }
 
 .small-fixed-col {
-  width: 50px;
+  width: 40px;
 }
 
 .med-fixed-col {
-  width: 70px;
+  width: 60px;
 }
 
 .large-fixed-col {
@@ -55,7 +55,7 @@ tr:nth-child(even) {
 }
 
 .scoring-div {
-  padding-bottom: 25px;
+  padding-bottom: 10px;
 }
 
 .side-by-side {
@@ -78,7 +78,7 @@ tr:nth-child(even) {
 }
 
 body {
-  font-size: 17px;
-  height: 95%;
+  font-size: 14px;
+  
   background: none;
 }

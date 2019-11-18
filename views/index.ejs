@@ -155,6 +155,81 @@
       </div>
     </div>
 
+    <!-- Explain Modal -->
+    <div id="explainModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="explainModalLabel" aria-hidden="true">
+      <div class="modal-dialog-width modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+            <h4 class="modal-title" id="explainModalLabel">Score Explanation</h4>
+          </div>
+          <form>
+
+            <div class="modal-body">
+              <div class="row">
+                <label for="exBoard" class="col col-lg-1 form-control-label">Board</label>
+                <label for="exDealer" class="col-lg-1 form-control-label">Dealer</label>
+                <label for="exVulnerability" class="col-lg-1 form-control-label">Vuln.</label>
+                <label for="exDeclarer" class="col-lg-1 form-control-label">Declarer</label>
+                <label for="exContract" class="col-lg-1 form-control-label">Contract</label>
+                <label for="exMade" class="col-lg-1 form-control-label">Made</label>
+                <label for="exDown" class="col-lg-1 form-control-label">Down</label>
+              </div>
+              <div class="row">
+                <div id="exBoard" class="col col-lg-1">Board</div>
+                <div id="exDealer" class="col-lg-1">Dealer</div>
+                <div id="exVulnerability" class="col-lg-1">Vuln.</div>
+                <div id="exDeclarer" class="col-lg-1">Declarer</div>
+                <div id="exContract" class="col-lg-1">Contract</div>
+                <div id="exMade" class="col-lg-1">Made</div>
+                <div id="exDown" class="col-lg-1">Down</div>
+              </div>
+              <div class="form-group row"></div>
+              <div class="row">
+                <label for="exContractPoints" class="col col-lg-3 form-control-label">Contract Points</label>
+                <div id="exContractPoints" class="col-lg-3">000</div>
+              </div>
+              <div class="row">
+                <label for="exOvertrickPoints" class="col col-lg-3 form-control-label">Overtrick Points</label>
+                <div id="exOvertrickPoints" class="col-lg-3">000</div>
+              </div>
+              <div class="row">
+                <label for="exSlamBonus" class="col col-lg-3 form-control-label">Slam Bonus</label>
+                <div id="exSlamBonus" class="col-lg-3">000</div>
+              </div>
+              <div class="row">
+                <label for="exRedoubledBonus" class="col col-lg-3 form-control-label">(Re)Doubled Bonus</label>
+                <div id="exRedoubledBonus" class="col-lg-3">000</div>
+              </div>
+              <div class="row">
+                <label for="exGameBonus" class="col col-lg-3 form-control-label">Game Bonus</label>
+                <div id="exGameBonus" class="col-lg-3">000</div>
+              </div>
+              <div class="row">
+                <label for="exPenaltyPoints" class="col col-lg-3 form-control-label">Penalty Points</label>
+                <div id="exPenaltyPoints" class="col-lg-3">000</div>
+              </div>
+              <div class="row">
+                <label for="exTotalNSScore" class="col col-lg-3 form-control-label">Total N/S Score</label>
+                <div id="exTotalNSScore" class="col-lg-3">000</div>
+              </div>
+              <div class="row">
+                <label for="exTotalEWScore" class="col col-lg-3 form-control-label">Total E/W Score</label>
+                <div id="exTotalEWScore" class="col-lg-3">000</div>
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button id="cancel-event-button" type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+
     <div id="masthead" class="blog-masthead">
       <div class="container">
         <div class="collapse navbar-collapse blog-nav left">

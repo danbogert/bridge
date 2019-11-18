@@ -457,7 +457,111 @@ function explainScore(board_hand_id) {
     return;
   }
 
-  console.log("Row complete -- get score");
+  var ids = board_hand_id.split("-");
+  var board_id = ids[0];
+  var hand_id = ids[1];
+  var board = thisEvent.boards[board_id-1];
+
+  // Board Number
+  $("#exBoard").html(board.number);
+
+  // Dealer
+  switch (board.dealer) {
+    case Dealer.NORTH:
+      $("#exDealer").html("North");
+      break;
+    case Dealer.SOUTH:
+      $("#exDealer").html("South");
+      break;
+    case Dealer.EAST:
+      $("#exDealer").html("East");
+      break;
+    case Dealer.WEST:
+      $("#exDealer").html("West");
+      break;
+  }
+
+  // Vulnerability
+  switch (board.vulnerable) {
+    case Vulnerable.ALL:
+      $("#exVulnerability").html("All");
+      break;
+    case Vulnerable.NONE:
+      $("#exVulnerability").html("None");
+      break;
+    case Vulnerable.NS:
+      $("#exVulnerability").html("N/S");
+      break;
+    case Vulnerable.EW:
+      $("#exVulnerability").html("E/W");
+      break;
+  }
+
+  // Declarer
+  var declarer = $("#" + board_hand_id + "-by").val();
+  $("#exDeclarer").html(declarer);
+
+  // Contract
+  $("#exContract").html($("#" + board_hand_id + "-contract").val());
+
+  // Made
+  var taken_num_tricks = $("#" + board_hand_id + "-tricks").val();
+  var contract = $("#" + board_hand_id + "-contract").val();
+  var contract_num_tricks = parseInt(contract.charAt(0));
+  var numOddTricks = (taken_num_tricks - 6) - contract_num_tricks;
+  var doubled = (contract.indexOf("X") > 0 || contract.indexOf("*") > 0);
+  var redoubled = (contract.indexOf("XX") > 0 || contract.indexOf("**") > 0);
+  var vulnerable = isVulnerable(declarer, board);
+
+  if (numOddTricks < 0) {
+    var penalty_points = calculatePenaltyPoints((numOddTricks * -1), vulnerable, doubled, redoubled);
+
+    $("#exMade").html("-");
+    $("#exDown").html(numOddTricks * -1);
+    $("#exContractPoints").html("-");
+    $("#exOvertrickPoints").html("-");
+    $("#exSlamBonus").html("-");
+    $("#exRedoubledBonus").html("-");
+    $("#exGameBonus").html("-");
+    $("#exPenaltyPoints").html(penalty_points);
+
+    if (declarer === 'North' || declarer === 'South') {
+      $("#exTotalNSScore").html("-");
+      $("#exTotalEWScore").html(penalty_points);
+    } else {
+      $("#exTotalNSScore").html(penalty_points);
+      $("#exTotalEWScore").html("-");
+    }
+  } else {
+    $("#exMade").html(numOddTricks);
+    $("#exDown").html("-");
+
+    // Contract Points
+    var suit = getSuit(contract);
+    var contract_points = getContractPoints(contract_num_tricks, suit, doubled, redoubled);
+    var overtrick_points = getOvertrickPoints(numOddTricks, suit, vulnerable, doubled, redoubled);
+    var slam_bonus = getSlamBonus(contract_num_tricks, vulnerable);
+    var redoubled_bonus = getDoubledRedoubledBonus(doubled, redoubled);
+    var game_bonus = getGameBonus(contract_points, vulnerable);
+    var victory_points = contract_points + overtrick_points + slam_bonus + redoubled_bonus + game_bonus;
+
+    $("#exContractPoints").html(contract_points);
+    $("#exOvertrickPoints").html(overtrick_points);
+    $("#exSlamBonus").html(slam_bonus);
+    $("#exRedoubledBonus").html(redoubled_bonus);
+    $("#exGameBonus").html(redoubled_bonus);
+    $("#exPenaltyPoints").html("-");
+
+    if (declarer === 'North' || declarer === 'South') {
+      $("#exTotalNSScore").html(victory_points);
+      $("#exTotalEWScore").html("-");
+    } else {
+      $("#exTotalNSScore").html("-");
+      $("#exTotalEWScore").html(victory_points);
+    }
+  }
+
+  $("#explainModal").modal();
 }
 
 function createDropdown(board_hand_id, dropdown_id, text, values) {
