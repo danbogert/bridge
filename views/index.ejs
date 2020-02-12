@@ -25,6 +25,8 @@
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.1/js/bootstrap-datepicker.min.js"></script> -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.11.0/js/bootstrap-select.min.js"></script>
     <script src="javascripts/bridge.js"></script>
+    <script src="javascripts/mitchell.js"></script>
+    <script src="javascripts/howell.js"></script>
 
   </head>
   <body>
@@ -77,19 +79,16 @@
               <div class="form-group row">
                 <label for="movement" class="col-sm-3 form-control-label">Movement</label>
                 <div class="col-sm-9">
-                  <!--
                   <div class="dropdown">
                     <button class="btn btn-default dropdown-toggle" type="button" id="movement" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                       Movement
                       <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu" role="menu" aria-labelledby="movement">
-                      <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Mitchell</a></li>
-                      <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Howell</a></li>
+                      <li role="presentation"><a id="mitchell-dropdown" role="menuitem" tabindex="-1" href="#">Mitchell</a></li>
+                      <li role="presentation"><a id="howell-dropdown" role="menuitem" tabindex="-1" href="#">Howell</a></li>
                     </ul>
                   </div>
-                -->
-                Mitchell
                 </div>
               </div>
 
@@ -115,31 +114,51 @@
                 </div>
               </div>
 
-              <!-- North / South Pairs -->
-              <h4 class="well-label">North / South Pairs</h4>
-              <div class="well" id="north-south-pairs">
-                <div class="row">
-                  <!-- Pair 1 -->
-                  <label id="ns-pair1-label" for="ns-pair1" class="col-sm-2 form-control-label">Pair 1</label>
-                  <div class="col-sm-10 pair ns-pair" id="ns-pair1">
-                    <input type="text" class="form-control" id="pair1-north" placeholder="North 1" required>
-                    <input type="text" class="form-control" id="pair1-south" placeholder="South 1" required>
+              <div id="mitchell-pairs" class="hidden">
+                <!-- Mitchell North / South Pairs -->
+                <h4 class="well-label">North / South Pairs</h4>
+                <div class="well" id="north-south-pairs">
+                  <div class="row">
+                    <!-- Pair 1 -->
+                    <label id="ns-pair1-label" for="ns-pair1" class="col-sm-2 form-control-label">Pair 1</label>
+                    <div class="col-sm-10 pair ns-pair" id="ns-pair1">
+                      <input type="text" class="form-control" id="pair1-north" placeholder="North 1" required>
+                      <input type="text" class="form-control" id="pair1-south" placeholder="South 1" required>
+                    </div>
+                    <button id="add-ns-pair-button" type="button" class="btn btn-primary shift-right">Add Pair</button>
+                    <button id="remove-ns-pair-button" type="button" class="btn btn-primary shift-right hidden">Remove Pair</button>
                   </div>
-                  <button id="add-ns-pair-button" type="button" class="btn btn-primary shift-right">Add Pair</button>
+                </div>
+
+                <!-- Mitchell East / West Pairs -->
+                <h4 class="well-label">East / West Pairs</h4>
+                <div class="well" id="east-west-pairs">
+                  <div class="form-group row">
+                    <!-- Pair 1 -->
+                    <label id="ew-pair1-label" for="ew-pair1" class="col-sm-2 form-control-label">Pair 1</label>
+                    <div class="col-sm-10 pair ew-pair" id="ew-pair1">
+                      <input type="text" class="form-control" id="pair1-east" placeholder="East 1" required>
+                      <input type="text" class="form-control" id="pair1-west" placeholder="West 1" required>
+                    </div>
+                    <button id="add-ew-pair-button" type="button" class="btn btn-primary shift-right">Add Pair</button>
+                    <button id="remove-ew-pair-button" type="button" class="btn btn-primary shift-right hidden">Remove Pair</button>
+                  </div>
                 </div>
               </div>
 
-              <!-- East / West Pairs -->
-              <h4 class="well-label">East / West Pairs</h4>
-              <div class="well" id="east-west-pairs">
-                <div class="form-group row">
-                  <!-- Pair 1 -->
-                  <label id="ew-pair1-label" for="ew-pair1" class="col-sm-2 form-control-label">Pair 1</label>
-                  <div class="col-sm-10 pair ew-pair" id="ew-pair1">
-                    <input type="text" class="form-control" id="pair1-east" placeholder="East 1" required>
-                    <input type="text" class="form-control" id="pair1-west" placeholder="West 1" required>
+              <!-- Howell Pairs -->
+              <div id="howell-pairs" class="hidden">
+                <h4 class="well-label">Pairs</h4>
+                <div class="well">
+                  <div class="form-group row">
+                    <!-- Pair 1 -->
+                    <label id="pair1-label" for="pair1" class="col-sm-2 form-control-label">Pair 1</label>
+                    <div class="col-sm-10 pair howell-pair" id="pair1-div">
+                      <input type="text" class="form-control" id="pair1" placeholder="Pair 1" required>
+                    </div>
+                    <button id="add-howell-pair-button" type="button" class="btn btn-primary shift-right">Add Pair</button>
+                    <button id="remove-howell-pair-button" type="button" class="btn btn-primary shift-right hidden">Remove Pair</button>
                   </div>
-                  <button id="add-ew-pair-button" type="button" class="btn btn-primary shift-right">Add Pair</button>
                 </div>
               </div>
 
@@ -173,8 +192,8 @@
                 <label for="exDealer" class="col-lg-1 form-control-label">Dealer</label>
                 <label for="exVulnerability" class="col-lg-1 form-control-label">Vuln.</label>
                 <label for="exDeclarer" class="col-lg-1 form-control-label">Declarer</label>
-                <label for="exContract" class="col-lg-1 form-control-label">Contract</label>
                 <label for="exMade" class="col-lg-1 form-control-label">Made</label>
+                <label for="exContract" class="col-lg-1 form-control-label">Contract</label>
                 <label for="exDown" class="col-lg-1 form-control-label">Down</label>
               </div>
               <div class="row">
@@ -222,7 +241,7 @@
             </div>
 
             <div class="modal-footer">
-              <button id="cancel-event-button" type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+              <button id="ok-event-button" type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
             </div>
 
           </form>

@@ -71,11 +71,12 @@ $(function() {
     });
 
     $("#title_link").click(showCoverPage);
-    $("#add-ns-pair-button").click(addNorthSouthPair);
-    $("#add-ew-pair-button").click(addEastWestPair);
     $("#cancel-event-button").click(cleanNewEventModal);
     $("#create-event-button").click(createEvent);
     $('#print-scores-button').click(printScores);
+
+    $("#mitchell-dropdown").click(mitchellDropdown);
+    $("#howell-dropdown").click(howellDropdown);
 
     var retrievedEvent = JSON.parse(localStorage.getItem('bridgeEvent'));
 
@@ -86,6 +87,16 @@ $(function() {
   }
 });
 
+function mitchellDropdown() {
+  $("#mitchell-pairs").removeClass("hidden");
+  $("#howell-pairs").addClass("hidden");
+}
+
+function howellDropdown() {
+  $("#howell-pairs").removeClass("hidden");
+  $("#mitchell-pairs").addClass("hidden");
+}
+
 function showCoverPage() {
   $("#masthead").slideUp(1000, "linear");
   $("#accordion").fadeOut(1000, "linear");
@@ -95,24 +106,6 @@ function showCoverPage() {
     $("#accordion").show();
     $("#cover-page").show();
   });
-}
-
-function addNorthSouthPair() {
-  var nextId = $(".ns-pair").length + 1;
-  $("<label id='ns-pair" + nextId + "-label' for='ns-pair" + nextId + "' class='col-sm-2 form-control-label'>Pair " + nextId + "</label>" +
-    "<div class='col-sm-10 pair ns-pair' id='ns-pair" + nextId + "'>" +
-      "<input type='text' class='form-control' id='pair" + nextId + "-north' placeholder='North " + nextId + "' required>" +
-      "<input type='text' class='form-control' id='pair" + nextId + "-south' placeholder='South " + nextId + "' required>" +
-    "</div>").insertBefore($("#add-ns-pair-button"));
-}
-
-function addEastWestPair() {
-  var nextId = $(".ew-pair").length + 1;
-  $("<label id='ew-pair" + nextId + "-label' for='ew-pair" + nextId + "' class='col-sm-2 form-control-label'>Pair " + nextId + "</label>" +
-    "<div class='col-sm-10 pair ew-pair' id='ew-pair" + nextId + "'>" +
-      "<input type='text' class='form-control' id='pair" + nextId + "-east' placeholder='East " + nextId + "' required>" +
-      "<input type='text' class='form-control' id='pair" + nextId + "-west' placeholder='West " + nextId + "' required>" +
-    "</div>").insertBefore($("#add-ew-pair-button"));
 }
 
 function cleanNewEventModal() {
