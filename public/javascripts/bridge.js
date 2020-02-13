@@ -75,9 +75,6 @@ $(function() {
     $("#create-event-button").click(createEvent);
     $('#print-scores-button').click(printScores);
 
-    $("#mitchell-dropdown").click(mitchellDropdown);
-    $("#howell-dropdown").click(howellDropdown);
-
     var retrievedEvent = JSON.parse(localStorage.getItem('bridgeEvent'));
 
     if (typeof retrievedEvent !== 'undefined' && retrievedEvent != null) {
@@ -86,16 +83,6 @@ $(function() {
       $("#masthead").hide();
   }
 });
-
-function mitchellDropdown() {
-  $("#mitchell-pairs").removeClass("hidden");
-  $("#howell-pairs").addClass("hidden");
-}
-
-function howellDropdown() {
-  $("#howell-pairs").removeClass("hidden");
-  $("#mitchell-pairs").addClass("hidden");
-}
 
 function showCoverPage() {
   $("#masthead").slideUp(1000, "linear");
@@ -111,6 +98,14 @@ function showCoverPage() {
 function cleanNewEventModal() {
   $(".nav li a").blur();
 
+  <!-- Clean the Movement dropdown -->
+  $("#movement").html("Movement <span class=\"caret\"></span>");
+  $("#mitchell-pairs").addClass("hidden");
+  $("#howell-pairs").addClass("hidden");
+  $(".ns-pair").children(".form-control").prop("disabled", true);
+  $(".ew-pair").children(".form-control").prop("disabled", true);
+  $(".howell-pair").children(".form-control").prop("disabled", true);
+
   <!-- Remove Extra North South Pairs -->
   var number_ns_pairs = $(".ns-pair").length;
   for (var i = 2; i <= number_ns_pairs; i++) {
@@ -125,11 +120,22 @@ function cleanNewEventModal() {
     $("#ew-pair" + i).remove();
   }
 
+  <!-- Remove Extra Howell Pairs -->
+  var number_howell_pairs = $(".howell-pair").length;
+  for (var i = 2; i <= number_howell_pairs; i++) {
+    $("#pair" + i + "-label").remove();
+    $("#pair" + i + "-div").remove();
+  }
+
   <!-- Clean up remaining inputs -->
   $("#pair1-north").val("");
   $("#pair1-south").val("");
   $("#pair1-east").val("");
   $("#pair1-west").val("");
+  $("#pair1").val("");
+  $("#remove-ns-pair-button").addClass("hidden");
+  $("#remove-ew-pair-button").addClass("hidden");
+  $("#remove-howell-pair-button").addClass("hidden");
   // $("#date input").val("");
   // datepicker
   // movement

@@ -1,7 +1,16 @@
 $(function() {
+  $("#howell-dropdown").click(howellDropdown);
   $("#add-howell-pair-button").click(addHowellPair);
   $("#remove-howell-pair-button").click(removeHowellPair);
 });
+
+function howellDropdown() {
+  $("#howell-pairs").removeClass("hidden");
+  $("#mitchell-pairs").addClass("hidden");
+  $(".ns-pair").children(".form-control").prop("disabled", true);
+  $(".ew-pair").children(".form-control").prop("disabled", true);
+  $(".howell-pair").children(".form-control").prop("disabled", false);
+}
 
 function addHowellPair() {
   var nextId = $(".howell-pair").length + 1;

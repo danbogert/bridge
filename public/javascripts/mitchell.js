@@ -1,9 +1,18 @@
 $(function() {
+  $("#mitchell-dropdown").click(mitchellDropdown);
   $("#add-ns-pair-button").click(addNorthSouthPair);
   $("#remove-ns-pair-button").click(removeNorthSouthPair);
   $("#add-ew-pair-button").click(addEastWestPair);
   $("#remove-ew-pair-button").click(removeEastWestPair);
 });
+
+function mitchellDropdown() {
+  $("#mitchell-pairs").removeClass("hidden");
+  $("#howell-pairs").addClass("hidden");
+  $(".ns-pair").children(".form-control").prop("disabled", false);
+  $(".ew-pair").children(".form-control").prop("disabled", false);
+  $(".howell-pair").children(".form-control").prop("disabled", true);
+}
 
 function addNorthSouthPair() {
   var nextId = $(".ns-pair").length + 1;
