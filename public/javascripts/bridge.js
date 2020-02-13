@@ -104,6 +104,9 @@ function cleanNewEventModal() {
   $(".mitchell-ew-pair").children(".form-control").prop("disabled", true);
   $(".howell-pair").children(".form-control").prop("disabled", true);
 
+  <!-- Clean the boards per table dropdown -->
+  $("#boards-per-table").html("5 <span class=\"caret\"></span>");
+
   <!-- Remove Extra Mitchell North South Pairs -->
   var number_mitchell_ns_pairs = $(".mitchell-ns-pair").length;
   for (var i = 2; i <= number_mitchell_ns_pairs; i++) {
@@ -272,6 +275,10 @@ function eventInputsValid() {
     if (!inputs[i].checkValidity()) {
       return false;
     }
+  }
+
+  if ($("#movement").text().includes("Movement")) {
+    return false;
   }
 
   return true;
