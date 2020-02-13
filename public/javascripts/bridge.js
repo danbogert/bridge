@@ -22,18 +22,16 @@ class Hand {
 }
 
 class NorthSouthPair {
-  constructor(number, north, south) {
+  constructor(number, pair) {
     this.number = number;
-    this.north = north;
-    this.south = south;
+    this.pair = pair;
   }
 }
 
 class EastWestPair {
-  constructor(number, east, west) {
+  constructor(number, pair) {
     this.number = number;
-    this.east = east;
-    this.west = west;
+    this.pair = pair;
   }
 }
 
@@ -102,43 +100,40 @@ function cleanNewEventModal() {
   $("#movement").html("Movement <span class=\"caret\"></span>");
   $("#mitchell-pairs").addClass("hidden");
   $("#howell-pairs").addClass("hidden");
-  $(".ns-pair").children(".form-control").prop("disabled", true);
-  $(".ew-pair").children(".form-control").prop("disabled", true);
+  $(".mitchell-ns-pair").children(".form-control").prop("disabled", true);
+  $(".mitchell-ew-pair").children(".form-control").prop("disabled", true);
   $(".howell-pair").children(".form-control").prop("disabled", true);
 
-  <!-- Remove Extra North South Pairs -->
-  var number_ns_pairs = $(".ns-pair").length;
-  for (var i = 2; i <= number_ns_pairs; i++) {
-    $("#ns-pair" + i + "-label").remove();
-    $("#ns-pair" + i).remove();
+  <!-- Remove Extra Mitchell North South Pairs -->
+  var number_mitchell_ns_pairs = $(".mitchell-ns-pair").length;
+  for (var i = 2; i <= number_mitchell_ns_pairs; i++) {
+    $("#mitchell-ns-pair" + i + "-label").remove();
+    $("#mitchell-ns-pair" + i + "-div").remove();
   }
 
-  <!-- Remove Extra East West Pairs -->
-  var number_ew_pairs = $(".ew-pair").length;
-  for (var i = 2; i <= number_ew_pairs; i++) {
-    $("#ew-pair" + i + "-label").remove();
-    $("#ew-pair" + i).remove();
+  <!-- Remove Extra Mitchell East West Pairs -->
+  var number_mitchell_ew_pairs = $(".mitchell-ew-pair").length;
+  for (var i = 2; i <= number_mitchell_ew_pairs; i++) {
+    $("#mitchell-ew-pair" + i + "-label").remove();
+    $("#mitchell-ew-pair" + i + "-div").remove();
   }
 
   <!-- Remove Extra Howell Pairs -->
   var number_howell_pairs = $(".howell-pair").length;
   for (var i = 2; i <= number_howell_pairs; i++) {
-    $("#pair" + i + "-label").remove();
-    $("#pair" + i + "-div").remove();
+    $("#howell-pair" + i + "-label").remove();
+    $("#howell-pair" + i + "-div").remove();
   }
 
   <!-- Clean up remaining inputs -->
-  $("#pair1-north").val("");
-  $("#pair1-south").val("");
-  $("#pair1-east").val("");
-  $("#pair1-west").val("");
-  $("#pair1").val("");
-  $("#remove-ns-pair-button").addClass("hidden");
-  $("#remove-ew-pair-button").addClass("hidden");
+  $("#mitchell-ns-pair1").val("");
+  $("#mitchell-ew-pair1").val("");
+  $("#howell-pair1").val("");
+  $("#remove-mitchell-ns-pair-button").addClass("hidden");
+  $("#remove-mitchell-ew-pair-button").addClass("hidden");
   $("#remove-howell-pair-button").addClass("hidden");
   // $("#date input").val("");
   // datepicker
-  // movement
   // hands per table
 }
 
@@ -155,19 +150,17 @@ function createEvent() {
   $(".nav li a").blur();
 
   var ns_pairs = [];
-  var number_ns_pairs = $(".ns-pair").length;
+  var number_ns_pairs = $(".mitchell-ns-pair").length;
   for (var i = 1; i <= number_ns_pairs; i++) {
-    var north = $("#pair" + i + "-north").val();
-    var south = $("#pair" + i + "-south").val();
-    ns_pairs.push(new NorthSouthPair(i, north, south));
+    var pair = $("#mitchell-ns-pair" + i).val();
+    ns_pairs.push(new NorthSouthPair(i, pair));
   }
 
   var ew_pairs = [];
-  var number_ew_pairs = $(".ew-pair").length;
+  var number_ew_pairs = $(".mitchell-ew-pair").length;
   for (var i = 1; i <= number_ew_pairs; i++) {
-    var east = $("#pair" + i + "-east").val();
-    var west = $("#pair" + i + "-west").val();
-    ew_pairs.push(new EastWestPair(i, east, west));
+    var pair = $("#mitchell-ew-pair" + i).val();
+    ew_pairs.push(new EastWestPair(i, pair));
   }
 
   var number_boards_per_table = $('#boards-per-table').text().trim();
@@ -204,17 +197,15 @@ function createPartialEvent(retrievedEvent) {
   var ns_pairs = [];
   var i = 1;
   for (var pair = retrievedEvent.ns_pairs[i]; typeof pair != 'undefined'; pair = retrievedEvent.ns_pairs[++i] ) {
-    var north = retrievedEvent.ns_pairs[i].north;
-    var south = retrievedEvent.ns_pairs[i].south;
-    ns_pairs.push(new NorthSouthPair(i, north, south));
+    var ns_pair = retrievedEvent.ns_pairs[i].north;
+    ns_pairs.push(new NorthSouthPair(i, ns_pair));
   }
 
   var ew_pairs = [];
   i = 1;
   for (var pair = retrievedEvent.ew_pairs[i]; typeof pair != 'undefined'; pair = retrievedEvent.ew_pairs[++i] ) {
-    var east = retrievedEvent.ew_pairs[i].east;
-    var west = retrievedEvent.ew_pairs[i].west;
-    ew_pairs.push(new EastWestPair(i, east, west));
+    var ew_pair = retrievedEvent.ew_pairs[i].pair;
+    ew_pairs.push(new EastWestPair(i, ew_pair));
   }
 
   var number_boards_per_table = retrievedEvent.boardsPerTable;
@@ -1106,7 +1097,7 @@ function createMatchPointTable(ns) {
       matchpoint_table += "<td>" + board_matchpoints + "</td>";
     }
 
-    var names = ns ? (thisEvent.ns_pairs[pair].north + " & " + thisEvent.ns_pairs[pair].south) : (thisEvent.ew_pairs[pair].east + " & " + thisEvent.ew_pairs[pair].west);
+    var names = ns ? thisEvent.ns_pairs[pair].pair : thisEvent.ew_pairs[pair].pair;
     var best_possible_score = single_hand_high_score * number_of_hands_played;
     matchpoint_table += "<td class='black-border-sides'>" + total_matchpoints + "</td><td class='black-border-right'>" + ((total_matchpoints / best_possible_score) * 100).toFixed(2) + "%</td><td>" + names + "</td></tr>";
   }
@@ -1151,7 +1142,7 @@ function createRankingTable(ns) {
   for (var i = 0; i < final_scores_sorted.length; i++) {
     var pair_num = final_scores_sorted[i][0];
     var score = final_scores_sorted[i][1].toFixed(2);
-    var names = ns ? (thisEvent.ns_pairs[pair_num].north + " & " + thisEvent.ns_pairs[pair_num].south) : (thisEvent.ew_pairs[pair_num].east + " & " + thisEvent.ew_pairs[pair_num].west);
+    var names = ns ? thisEvent.ns_pairs[pair_num].pair : thisEvent.ew_pairs[pair_num].pair;
 
     var border_bottom = "";
     if ((i + 1) === final_scores_sorted.length) {
