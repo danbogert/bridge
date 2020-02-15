@@ -172,6 +172,9 @@ function fillCompletedRows(retrievedEvent) {
           continue;
         }
 
+        if (retrievedEvent.eventType == EventType.HOWELL) {
+          $("#" + board_hand_id + "-ns").val(hand.ns_pair.number);
+        }
         $("#" + board_hand_id + "-ew").val(hand.ew_pair.number);
         $("#" + board_hand_id + "-contract").val(hand.contract);
         $("#" + board_hand_id + "-by").val(hand.by);

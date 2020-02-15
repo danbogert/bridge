@@ -7,8 +7,8 @@ $(function() {
 function howellDropdown() {
   $("#howell-pairs").removeClass("hidden");
   $("#mitchell-pairs").addClass("hidden");
-  $(".ns-pair").children(".form-control").prop("disabled", true);
-  $(".ew-pair").children(".form-control").prop("disabled", true);
+  $(".mitchell-ns-pair").children(".form-control").prop("disabled", true);
+  $(".mitchell-ew-pair").children(".form-control").prop("disabled", true);
   $(".howell-pair").children(".form-control").prop("disabled", false);
 }
 
@@ -33,7 +33,6 @@ function removeHowellPair() {
 }
 
 function createHowellEvent() {
-  // TODO
   var pairs = [];
   var num_pairs = $(".howell-pair").length;
   for (var i = 1; i <= num_pairs; i++) {
@@ -71,47 +70,37 @@ function createHowellEvent() {
 }
 
 function createPartialHowellEvent(retrievedEvent) {
-  // TODO
-  // var ns_pairs = [];
-  // var i = 1;
-  // for (var pair = retrievedEvent.ns_pairs[i]; typeof pair != 'undefined'; pair = retrievedEvent.ns_pairs[++i] ) {
-  //   var ns_pair = retrievedEvent.ns_pairs[i].north;
-  //   ns_pairs.push(new Pair(i, ns_pair));
-  // }
-  //
-  // var ew_pairs = [];
-  // i = 1;
-  // for (var pair = retrievedEvent.ew_pairs[i]; typeof pair != 'undefined'; pair = retrievedEvent.ew_pairs[++i] ) {
-  //   var ew_pair = retrievedEvent.ew_pairs[i].pair;
-  //   ew_pairs.push(new Pair(i, ew_pair));
-  // }
-  //
-  // var number_boards_per_table = retrievedEvent.boardsPerTable;
-  // var number_of_tables = Math.max(ns_pairs.length, ew_pairs.length);
-  // var total_number_of_boards = number_boards_per_table * number_of_tables;
-  //
-  // var boards = createBoards(total_number_of_boards, EventType.HOWELL, pairs);
-  //
-  // thisEvent = new BridgeEvent(retrievedEvent.eventType, boards);
-  // thisEvent.ns_pairs = createPairsLookupMap(ns_pairs);
-  // thisEvent.ew_pairs = createPairsLookupMap(ew_pairs);
-  // thisEvent.boardsPerTable = number_boards_per_table;
-  //
-  // createScoringAccordion();
-  //
-  // $(".dropdown-menu li a").click(function() {
-  //   $(this).parents(".dropdown").find('.btn').html($(this).text() + ' <span class="caret"></span>');
-  // });
-  //
-  // $('.selectpicker').selectpicker({
-  //   style: 'btn-default',
-  //   width: '100%',
-  // });
-  //
-  // $("#cover-page").hide();
-  // $("#masthead").show();
-  //
-  // cleanNewEventModal();
-  //
-  // fillCompletedRows(retrievedEvent);
+  var pairs = [];
+  var i = 1;
+  for (var pair = retrievedEvent.pairs[i]; typeof pair != 'undefined'; pair = retrievedEvent.pairs[++i] ) {
+    pairs.push(new Pair(i, pair.pair));
+  }
+
+  var number_boards_per_table = retrievedEvent.boardsPerTable;
+  var number_of_tables = Math.trunc(pairs.length / 2);
+  var total_number_of_boards = number_boards_per_table * number_of_tables;
+
+  var boards = createBoards(total_number_of_boards, EventType.HOWELL, pairs);
+
+  thisEvent = new BridgeEvent(EventType.HOWELL, boards);
+  thisEvent.pairs = createPairsLookupMap(pairs);
+  thisEvent.boardsPerTable = number_boards_per_table;
+
+  createScoringAccordion();
+
+  $(".dropdown-menu li a").click(function() {
+    $(this).parents(".dropdown").find('.btn').html($(this).text() + ' <span class="caret"></span>');
+  });
+
+  $('.selectpicker').selectpicker({
+    style: 'btn-default',
+    width: '100%',
+  });
+
+  $("#cover-page").hide();
+  $("#masthead").show();
+
+  cleanNewEventModal();
+
+  fillCompletedRows(retrievedEvent);
 }
