@@ -159,6 +159,7 @@ function createPartialEvent(retrievedEvent) {
 }
 
 function fillCompletedRows(retrievedEvent) {
+  console.log("fillCompletedRows");
   for (var i = 0; i < retrievedEvent.boards.length; i++) {
     var board = retrievedEvent.boards[i];
     for (var j = 0; j < board.hands.length; j++) {
@@ -166,6 +167,10 @@ function fillCompletedRows(retrievedEvent) {
 
       var board_hand_id = board.number + "-" + j;
       if (hand.ew_pair == "N/A") {
+        if (retrievedEvent.eventType == EventType.HOWELL) {
+          // TODO verify ns_pair exists
+          $("#" + board_hand_id + "-ns").val(hand.ns_pair.number);
+        }
         $("#" + board_hand_id + "-ew").val(hand.ew_pair);
       } else {
         if (typeof hand.ew_score == 'undefined') {
@@ -288,7 +293,7 @@ function createHands(event_type, pairs) {
       board_hands.push(new Hand(pairs[i]));
     }
   } else {
-    for (var i = 0; i < Math.trunc(pairs.length / 2); i++) {
+    for (var i = 0; i < Math.round(pairs.length / 2); i++) {
       board_hands.push(new Hand());
     }
   }
@@ -515,6 +520,7 @@ function createDropdown(board_hand_id, dropdown_id, text, values) {
 function isRowComplete(board_hand_id) {
   var currentlyActive = $(document.activeElement);
   var noEastWestPair = $("#" + board_hand_id + "-ew").val() === "N/A";
+  var northSouthPairExists = $("#" + board_hand_id + "-ns").val() != null;
   var eastWestPairExists = $("#" + board_hand_id + "-ew").val() != null;
   var boardHandPassed = $("#" + board_hand_id + "-contract").val().toUpperCase().startsWith("PASS");
 
@@ -533,7 +539,7 @@ function isRowComplete(board_hand_id) {
     delete thisEvent.boards[board_id-1].hands[hand_id].ew_score;
     delete thisEvent.boards[board_id-1].hands[hand_id].ns_score;
     delete thisEvent.boards[board_id-1].hands[hand_id].ew_pair;
-  } else if (boardHandPassed && eastWestPairExists) {
+  } else if (boardHandPassed && northSouthPairExists && eastWestPairExists) {
     // TODO clear and disable the rest of the row, scoring is allowed for the board
     $("#" + board_hand_id + "-by").val('');
     $("#" + board_hand_id + "-tricks").val('');
@@ -549,9 +555,7 @@ function isRowComplete(board_hand_id) {
     delete thisEvent.boards[board_id-1].hands[hand_id].ew_pair;
   }
 
-  // TODO add another check to see if the hand was PASSED, it would also count as complete
-
-  if (noEastWestPair || (boardHandPassed && eastWestPairExists) || (isValid(board_hand_id + "-ew") && isValid(board_hand_id + "-contract") && isValid(board_hand_id + "-by") && isValid(board_hand_id + "-tricks"))) {
+  if (noEastWestPair || (boardHandPassed && northSouthPairExists && eastWestPairExists) || (isValid(board_hand_id + "-ns") && isValid(board_hand_id + "-ew") && isValid(board_hand_id + "-contract") && isValid(board_hand_id + "-by") && isValid(board_hand_id + "-tricks"))) {
     calculateScore(board_hand_id);
     localStorage.setItem('bridgeEvent', JSON.stringify(thisEvent));
   }
@@ -575,24 +579,46 @@ function calculateScore(full_board_hand_id) {
     $("#heading" + (board_id + 1)).removeClass("alert-danger");
     $("#heading" + (board_id + 1)).addClass("alert-success");
 
-    calculateMatchPointsForBoard(board);
-    var ns_matchpoint_table = createMatchPointTable(true);
-    var ew_matchpoint_table = createMatchPointTable(false);
-    var ns_rankings_table = createRankingTable(true);
-    var ew_rankings_table = createRankingTable(false);
-
-    $("#final_score_tables_div").empty();
-    $("#final_score_tables_div").append("<div class='scoring-div'><h3 class='bold'>North/South Scores</h3>" + ns_matchpoint_table + "</div>");
-    $("#final_score_tables_div").append("<div class='scoring-div'><h3 class='bold'>East/West Scores</h3>" + ew_matchpoint_table + "</div>");
-    $("#final_score_tables_div").append("<div class='scoring-div side-by-side'><h3 class='bold'>North/South Ranking</h3>" + ns_rankings_table + "</div>");
-    $("#final_score_tables_div").append("<div class='scoring-div side-by-side right'><h3 class='bold'>East/West Ranking</h3>" + ew_rankings_table + "</div>");
+    if (thisEvent.eventType == EventType.MITCHELL) {
+      calculateMatchPointsForBoard(board);
+      updateMitchellFinalScores();
+    } else {
+      calculateMatchPointsForBoard(board);
+      updateHowellFinalScores();
+    }
 
     $("#scores-well").removeClass("hidden");
 
     if (isFirstBoardAtTable(board_id)) {
-      copyEwPairsToRemainingBoardsAtTable(board_id);
+      copyPairsToRemainingBoardsAtTable(board_id);
     }
   }
+}
+
+function calculateMatchPointsForBoard(board) {
+  // create sorted array of tuples
+  var ns_pairs_to_scores = {};
+  for (var i = 0; i < board.hands.length; i++) {
+    if (board.hands[i].ew_pair != 'N/A') {
+      ns_pairs_to_scores[board.hands[i].ns_pair.number] = board.hands[i].ns_score;
+    }
+  }
+  var sortedNsPairScoreTuples = sortByValue(ns_pairs_to_scores);
+
+  // assign matchpoints to each pair
+  board.ns_matchpoints = calculateMatchPoints(sortedNsPairScoreTuples);
+
+
+  var ew_pairs_to_scores = {};
+  for (var i = 0; i < board.hands.length; i++) {
+    if (board.hands[i].ew_pair != 'N/A') {
+      ew_pairs_to_scores[board.hands[i].ew_pair.number] = board.hands[i].ew_score;
+    }
+  }
+  var sortedEwPairScoreTuples = sortByValue(ew_pairs_to_scores);
+
+  // assign matchpoints to each pair
+  board.ew_matchpoints = calculateMatchPoints(sortedEwPairScoreTuples);
 }
 
 function isFirstBoardAtTable(board_id) {
@@ -605,20 +631,30 @@ function isFirstBoardAtTable(board_id) {
   return board_id === 0;
 }
 
-function copyEwPairsToRemainingBoardsAtTable(first_board_id) {
+function copyPairsToRemainingBoardsAtTable(first_board_id) {
+  console.log("copyPairsToRemainingBoardsAtTable")
   var first_board_number = first_board_id + 1;
   var boards_per_table = parseInt(thisEvent.boardsPerTable);
-  var number_pairs_per_board = Object.keys(thisEvent.ns_pairs).length;
+  var number_pairs_per_board = (thisEvent.eventType == EventType.MITCHELL)
+    ? Object.keys(thisEvent.ns_pairs).length
+    : Math.round(Object.keys(thisEvent.pairs).length / 2);
 
-  // get the ew pair numbers from the first board and put them in an array
+  // get the pair numbers from the first board and put them in an array
+  var ns_pair_numbers = [];
   var ew_pair_numbers = [];
   for (var i = 0; i < number_pairs_per_board; i++) {
+    ns_pair_numbers.push($("#" + first_board_number + "-" + i + "-ns").val());
     ew_pair_numbers.push($("#" + first_board_number + "-" + i + "-ew").val());
   }
 
-  // go through the rest of the boards and update the rest of the ew pair numbers
+  // go through the rest of the boards and update the rest of the pair numbers
   for (var i = first_board_number + 1; i <= first_board_number + boards_per_table - 1; i++) {
     for (var j = 0; j < number_pairs_per_board; j++) {
+      if (thisEvent.eventType == EventType.HOWELL) {
+        $("#" + i + "-" + j + "-ns").val(ns_pair_numbers[j]);
+        thisEvent.boards[i-1].hands[j].ns_pair = ns_pair_numbers[j];
+      }
+
       $("#" + i + "-" + j + "-ew").val(ew_pair_numbers[j]);
       $("#" + i + "-" + j + "-form .selectpicker").selectpicker('refresh');
 
@@ -638,12 +674,18 @@ function calculateScoreForBoardHand(full_board_hand_id, board_id, hand_id, board
   var contract = $("#" + full_board_hand_id + "-contract").val().toUpperCase();
 
   if (ew_number === 'N/A') {
+    thisEvent.boards[board_id].hands[hand_id].ns_pair = thisEvent.pairs[ns_number];
     thisEvent.boards[board_id].hands[hand_id].ew_pair = "N/A";
     thisEvent.boards[board_id].hands[hand_id].contract = "";
     thisEvent.boards[board_id].hands[hand_id].by = "";
     thisEvent.boards[board_id].hands[hand_id].tricks = "";
   } else if (contract.startsWith("PASS")) {
-    thisEvent.boards[board_id].hands[hand_id].ew_pair = thisEvent.ew_pairs[ew_number];
+    if (thisEvent.eventType == EventType.MITCHELL) {
+      thisEvent.boards[board_id].hands[hand_id].ew_pair = thisEvent.ew_pairs[ew_number];
+    } else {
+      thisEvent.boards[board_id].hands[hand_id].ns_pair = thisEvent.pairs[ns_number];
+      thisEvent.boards[board_id].hands[hand_id].ew_pair = thisEvent.pairs[ew_number];
+    }
     thisEvent.boards[board_id].hands[hand_id].contract = "PASS";
     thisEvent.boards[board_id].hands[hand_id].by = "";
     thisEvent.boards[board_id].hands[hand_id].tricks = "";
@@ -658,7 +700,12 @@ function calculateScoreForBoardHand(full_board_hand_id, board_id, hand_id, board
     var contract_num_tricks = parseInt(contract.charAt(0));
     var numOddTricks = (taken_num_tricks - 6) - contract_num_tricks;
 
-    thisEvent.boards[board_id].hands[hand_id].ew_pair = thisEvent.ew_pairs[ew_number];
+    if (thisEvent.eventType == EventType.MITCHELL) {
+      thisEvent.boards[board_id].hands[hand_id].ew_pair = thisEvent.ew_pairs[ew_number];
+    } else {
+      thisEvent.boards[board_id].hands[hand_id].ns_pair = thisEvent.pairs[ns_number];
+      thisEvent.boards[board_id].hands[hand_id].ew_pair = thisEvent.pairs[ew_number];
+    }
     thisEvent.boards[board_id].hands[hand_id].contract = contract;
     thisEvent.boards[board_id].hands[hand_id].by = declarer;
     thisEvent.boards[board_id].hands[hand_id].tricks = taken_num_tricks;
@@ -914,36 +961,12 @@ function allHandsScored(hands) {
   return true;
 }
 
-function calculateMatchPointsForBoard(board) {
-  // create sorted array of tuples
-  var ns_pairs_to_scores = {};
-  for (var i = 0; i < board.hands.length; i++) {
-    if (board.hands[i].ew_pair != 'N/A') {
-      ns_pairs_to_scores[board.hands[i].ns_pair.number] = board.hands[i].ns_score;
-    }
-  }
-  var sortedNsPairScoreTuples = sortByValue(ns_pairs_to_scores);
-
-  // assign matchpoints to each pair
-  board.ns_matchpoints = calculateMatchPoints(sortedNsPairScoreTuples);
-
-
-  var ew_pairs_to_scores = {};
-  for (var i = 0; i < board.hands.length; i++) {
-    if (board.hands[i].ew_pair != 'N/A') {
-      ew_pairs_to_scores[board.hands[i].ew_pair.number] = board.hands[i].ew_score;
-    }
-  }
-  var sortedEwPairScoreTuples = sortByValue(ew_pairs_to_scores);
-
-  // assign matchpoints to each pair
-  board.ew_matchpoints = calculateMatchPoints(sortedEwPairScoreTuples);
-}
-
 function sortByValue(obj) {
     var tuples = [];
 
-    for (var key in obj) tuples.push([key, obj[key]]);
+    for (var key in obj) {
+      tuples.push([key, obj[key]]);
+    }
 
     tuples.sort(function(a, b) { return a[1] < b[1] ? 1 : a[1] > b[1] ? -1 : 0 });
     return tuples;
@@ -998,104 +1021,6 @@ function calculateMatchPoints(sortedPairScoreTuples) {
   }
 
   return matchpoints;
-}
-
-function createMatchPointTable(ns) {
-
-  var num_pairs = ns ? Object.keys(thisEvent.ns_pairs).length : Object.keys(thisEvent.ew_pairs).length;
-  var single_hand_high_score = (thisEvent.boards[0].hands.length - 1) * 2;
-
-  var matchpoint_table = "<table><tr class='thick-border-bottom'><th class='small-fixed-col'>Pair</th>";
-  for (var i = 1; i <= thisEvent.boards.length; i++) {
-    matchpoint_table += "<th>" + i + "</th>";
-  }
-  matchpoint_table += "<th class='small-fixed-col'>Total</th><th class='med-fixed-col'>%</th><th class='large-fixed-col'>Name</th></tr>";
-
-  for (var pair = 1; pair <= num_pairs; pair++) {
-    var number_of_hands_played = 0;
-    var border_bottom = "";
-    if (pair === num_pairs) {
-      border_bottom = " class='border-bottom'";
-    }
-    matchpoint_table += "<tr" + border_bottom + "><td class='black-border-right'>" + pair + "</td>";
-
-    var total_matchpoints = 0;
-    for (var board_index = 0; board_index < thisEvent.boards.length; board_index++) {
-      // if scores not entered for this board yet, just put an empty space
-      var board = thisEvent.boards[board_index];
-      if ((ns && board.ns_matchpoints === undefined) || (!ns && board.ew_matchpoints === undefined))  {
-        matchpoint_table += "<td> </td>";
-        continue;
-      }
-
-      // if this pair skipped this board, put a hyphen
-      var board_matchpoints = ns ? board.ns_matchpoints[pair] : board.ew_matchpoints[pair];
-      if (board_matchpoints === undefined) {
-        matchpoint_table += "<td>-</td>";
-        continue;
-      }
-
-      number_of_hands_played++;
-      total_matchpoints += board_matchpoints;
-      matchpoint_table += "<td>" + board_matchpoints + "</td>";
-    }
-
-    var names = ns ? thisEvent.ns_pairs[pair].pair : thisEvent.ew_pairs[pair].pair;
-    var best_possible_score = single_hand_high_score * number_of_hands_played;
-    matchpoint_table += "<td class='black-border-sides'>" + total_matchpoints + "</td><td class='black-border-right'>" + ((total_matchpoints / best_possible_score) * 100).toFixed(2) + "%</td><td>" + names + "</td></tr>";
-  }
-
-  return matchpoint_table += "</table>";
-}
-
-function createRankingTable(ns) {
-  var num_pairs = ns ? Object.keys(thisEvent.ns_pairs).length : Object.keys(thisEvent.ew_pairs).length;
-  var single_hand_high_score = (thisEvent.boards[0].hands.length - 1) * 2;
-  //var best_possible_score = single_hand_high_score * thisEvent.boards.length;
-  var final_scores = {};
-
-  for (var pair = 1; pair <= num_pairs; pair++) {
-    var total_matchpoints = 0;
-    var number_of_hands_played = 0;
-
-    for (var board_index = 0; board_index < thisEvent.boards.length; board_index++) {
-      // if scores not entered for this board yet, no score
-      var board = thisEvent.boards[board_index];
-      if ((ns && board.ns_matchpoints === undefined) || (!ns && board.ew_matchpoints === undefined))  {
-        continue;
-      }
-
-      // if this pair skipped this board, no score
-      var board_matchpoints = ns ? board.ns_matchpoints[pair] : board.ew_matchpoints[pair];
-      if (board_matchpoints === undefined) {
-        continue;
-      }
-
-      number_of_hands_played++;
-      total_matchpoints += board_matchpoints;
-    }
-
-    var best_possible_score = single_hand_high_score * number_of_hands_played;
-    final_scores[pair] = (total_matchpoints / best_possible_score) * 100;
-  }
-
-  var final_scores_sorted = sortByValue(final_scores);
-  var rankings_table = "<table><tr class='thick-border-bottom'><th class='small-fixed-col'>Rank</th><th class='med-fixed-col'>%</th><th>Pair</th></tr>";
-
-  for (var i = 0; i < final_scores_sorted.length; i++) {
-    var pair_num = final_scores_sorted[i][0];
-    var score = final_scores_sorted[i][1].toFixed(2);
-    var names = ns ? thisEvent.ns_pairs[pair_num].pair : thisEvent.ew_pairs[pair_num].pair;
-
-    var border_bottom = "";
-    if ((i + 1) === final_scores_sorted.length) {
-      border_bottom = " class='border-bottom'";
-    }
-    rankings_table += "<tr" + border_bottom + "><td class='small-fixed-col black-border-right'>" + (i + 1) + "</td><td class='med-fixed-col black-border-right'>" + score + "%</td><td>" + pair_num + " / " + names + "</td></tr>";
-  }
-  rankings_table += "</table>";
-
-  return rankings_table;
 }
 
 function printScores() {
