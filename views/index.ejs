@@ -59,22 +59,6 @@
           </div>
             <form>
           <div class="modal-body">
-
-              <!-- Date -->
-              <!-- <div id="here" class="form-group row">
-                <label for="date" class="col-sm-3 form-control-label">Date</label>
-                <div class="col-sm-6">
-                  <div class="form-group">
-                    <div class="input-group date" id="date">
-                      <input type="text" class="form-control" required/>
-                      <span class="input-group-addon">
-                        <span class="glyphicon glyphicon-calendar"></span>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div> -->
-
               <!-- Movement -->
               <div class="form-group row">
                 <label for="movement" class="col-sm-3 form-control-label">Movement</label>
@@ -114,6 +98,7 @@
                 </div>
               </div>
 
+              <!-- Mitchell Pairs -->
               <div id="mitchell-pairs" class="hidden">
                 <!-- Mitchell North / South Pairs -->
                 <h4 class="well-label">North / South Pairs</h4>
@@ -122,7 +107,7 @@
                     <!-- Pair 1 -->
                     <label id="mitchell-ns-pair1-label" for="mitchell-ns-pair1" class="col-sm-2 form-control-label">Pair 1</label>
                     <div class="col-sm-10 pair mitchell-ns-pair" id="mitchell-ns-pair1-div">
-                      <input type="text" class="form-control" id="mitchell-ns-pair1" placeholder="Pair 1" required>
+                      <input type="text" class="form-control" id="mitchell-ns-pair1" placeholder="Pair 1" required disabled>
                     </div>
                     <button id="add-mitchell-ns-pair-button" type="button" class="btn btn-primary shift-right">Add Pair</button>
                     <button id="remove-mitchell-ns-pair-button" type="button" class="btn btn-primary shift-right hidden">Remove Pair</button>
@@ -136,7 +121,7 @@
                     <!-- Pair 1 -->
                     <label id="mitchell-ew-pair1-label" for="mitchell-ew-pair1" class="col-sm-2 form-control-label">Pair 1</label>
                     <div class="col-sm-10 pair mitchell-ew-pair" id="mitchell-ew-pair1-div">
-                      <input type="text" class="form-control" id="mitchell-ew-pair1" placeholder="Pair 1" required>
+                      <input type="text" class="form-control" id="mitchell-ew-pair1" placeholder="Pair 1" required disabled>
                     </div>
                     <button id="add-mitchell-ew-pair-button" type="button" class="btn btn-primary shift-right">Add Pair</button>
                     <button id="remove-mitchell-ew-pair-button" type="button" class="btn btn-primary shift-right hidden">Remove Pair</button>
@@ -152,15 +137,13 @@
                     <!-- Pair 1 -->
                     <label id="howell-pair1-label" for="howell-pair1" class="col-sm-2 form-control-label">Pair 1</label>
                     <div class="col-sm-10 pair howell-pair" id="howell-pair1-div">
-                      <input type="text" class="form-control" id="howell-pair1" placeholder="Pair 1" required>
+                      <input type="text" class="form-control" id="howell-pair1" placeholder="Pair 1" required disabled>
                     </div>
                     <button id="add-howell-pair-button" type="button" class="btn btn-primary shift-right">Add Pair</button>
                     <button id="remove-howell-pair-button" type="button" class="btn btn-primary shift-right hidden">Remove Pair</button>
                   </div>
                 </div>
               </div>
-
-
           </div>
 
           <div class="modal-footer">

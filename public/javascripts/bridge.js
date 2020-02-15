@@ -1,7 +1,8 @@
 "use strict";
 
 class BridgeEvent {
-  constructor(boards) {
+  constructor(eventType, boards) {
+    this.eventType = eventType;
     this.boards = boards;
   }
 }
@@ -21,19 +22,17 @@ class Hand {
   }
 }
 
-class NorthSouthPair {
+class Pair {
   constructor(number, pair) {
     this.number = number;
     this.pair = pair;
   }
 }
 
-class EastWestPair {
-  constructor(number, pair) {
-    this.number = number;
-    this.pair = pair;
-  }
-}
+var EventType = {
+  MITCHELL: 1,
+  HOWELL: 2,
+};
 
 var Dealer = {
   NORTH: 1,
@@ -60,10 +59,6 @@ var Suit = {
 var thisEvent;
 
 $(function() {
-    // $('#date').datepicker({
-    //   autoclose: true
-    // });
-
     $(".dropdown-menu li a").click(function() {
       $(this).parents(".dropdown").find('.btn').html($(this).text() + ' <span class="caret"></span>');
     });
@@ -135,15 +130,11 @@ function cleanNewEventModal() {
   $("#remove-mitchell-ns-pair-button").addClass("hidden");
   $("#remove-mitchell-ew-pair-button").addClass("hidden");
   $("#remove-howell-pair-button").addClass("hidden");
-  // $("#date input").val("");
-  // datepicker
-  // hands per table
 }
 
 function createEvent() {
   if (!eventInputsValid()) {
-    console.log("inputs not valid -- event not created")
-    // add invalid class?
+    console.log("inputs not valid -- event not created");
     return;
   }
 
@@ -152,93 +143,19 @@ function createEvent() {
   $("#myModal").modal('toggle');
   $(".nav li a").blur();
 
-  var ns_pairs = [];
-  var number_ns_pairs = $(".mitchell-ns-pair").length;
-  for (var i = 1; i <= number_ns_pairs; i++) {
-    var pair = $("#mitchell-ns-pair" + i).val();
-    ns_pairs.push(new NorthSouthPair(i, pair));
+  if ($("#movement").text().includes("Mitchell")) {
+    createMitchellEvent();
+  } else {
+    createHowellEvent();
   }
-
-  var ew_pairs = [];
-  var number_ew_pairs = $(".mitchell-ew-pair").length;
-  for (var i = 1; i <= number_ew_pairs; i++) {
-    var pair = $("#mitchell-ew-pair" + i).val();
-    ew_pairs.push(new EastWestPair(i, pair));
-  }
-
-  var number_boards_per_table = $('#boards-per-table').text().trim();
-  var number_of_tables = Math.max(number_ns_pairs, number_ew_pairs);
-  var total_number_of_boards = number_boards_per_table * number_of_tables;
-
-  var boards = createBoards(total_number_of_boards, ns_pairs);
-
-  thisEvent = new BridgeEvent(boards);
-  thisEvent.ns_pairs = createPairsLookupMap(ns_pairs);
-  thisEvent.ew_pairs = createPairsLookupMap(ew_pairs);
-  thisEvent.boardsPerTable = number_boards_per_table;
-
-  createScoringAccordion(ns_pairs, ew_pairs);
-
-  $(".dropdown-menu li a").click(function() {
-    $(this).parents(".dropdown").find('.btn').html($(this).text() + ' <span class="caret"></span>');
-  });
-
-  $('.selectpicker').selectpicker({
-    style: 'btn-default',
-    width: '100%',
-  });
-
-  $("#cover-page").hide();
-  $("#masthead").show();
-
-  cleanNewEventModal();
-
-  localStorage.setItem('bridgeEvent', JSON.stringify(thisEvent));
 }
 
 function createPartialEvent(retrievedEvent) {
-  var ns_pairs = [];
-  var i = 1;
-  for (var pair = retrievedEvent.ns_pairs[i]; typeof pair != 'undefined'; pair = retrievedEvent.ns_pairs[++i] ) {
-    var ns_pair = retrievedEvent.ns_pairs[i].north;
-    ns_pairs.push(new NorthSouthPair(i, ns_pair));
+  if (retrievedEvent.eventType == EventType.MITCHELL) {
+    createPartialMitchellEvent(retrievedEvent);
+  } else {
+    createPartialHowellEvent(retrievedEvent);
   }
-
-  var ew_pairs = [];
-  i = 1;
-  for (var pair = retrievedEvent.ew_pairs[i]; typeof pair != 'undefined'; pair = retrievedEvent.ew_pairs[++i] ) {
-    var ew_pair = retrievedEvent.ew_pairs[i].pair;
-    ew_pairs.push(new EastWestPair(i, ew_pair));
-  }
-
-  var number_boards_per_table = retrievedEvent.boardsPerTable;
-  var number_of_tables = Math.max(ns_pairs.length, ew_pairs.length);
-  var total_number_of_boards = number_boards_per_table * number_of_tables;
-
-  var boards = createBoards(total_number_of_boards, ns_pairs);
-
-  thisEvent = new BridgeEvent(boards);
-  thisEvent.ns_pairs = createPairsLookupMap(ns_pairs);
-  thisEvent.ew_pairs = createPairsLookupMap(ew_pairs);
-  thisEvent.boardsPerTable = number_boards_per_table;
-
-  createScoringAccordion(ns_pairs, ew_pairs);
-
-  $(".dropdown-menu li a").click(function() {
-    $(this).parents(".dropdown").find('.btn').html($(this).text() + ' <span class="caret"></span>');
-  });
-
-  $('.selectpicker').selectpicker({
-    style: 'btn-default',
-    width: '100%',
-  });
-
-  $("#cover-page").hide();
-  $("#masthead").show();
-
-  cleanNewEventModal();
-
-  fillCompletedRows(retrievedEvent);
 }
 
 function fillCompletedRows(retrievedEvent) {
@@ -294,11 +211,11 @@ function createPairsLookupMap(pairs) {
   return pairs_map;
 }
 
-function createBoards(total_number_of_hands, ns_pairs) {
+function createBoards(total_number_of_boards, event_type, pairs) {
   var boards = [];
 
-  for (var i = 1; i <= total_number_of_hands; i++) {
-    var board_hands = createHands(ns_pairs);
+  for (var i = 1; i <= total_number_of_boards; i++) {
+    var board_hands = createHands(event_type, pairs);
 
     var board_number = i;
     while (board_number > 16) {
@@ -360,17 +277,23 @@ function createBoards(total_number_of_hands, ns_pairs) {
   return boards;
 }
 
-function createHands(ns_pairs) {
+function createHands(event_type, pairs) {
   var board_hands = [];
 
-  for (var i = 0; i < ns_pairs.length; i++) {
-    board_hands.push(new Hand(ns_pairs[i]));
+  if (event_type == EventType.MITCHELL) {
+    for (var i = 0; i < pairs.length; i++) {
+      board_hands.push(new Hand(pairs[i]));
+    }
+  } else {
+    for (var i = 0; i < Math.trunc(pairs.length / 2); i++) {
+      board_hands.push(new Hand());
+    }
   }
 
   return board_hands;
 }
 
-function createScoringAccordion(ns_pairs, ew_pairs) {
+function createScoringAccordion() {
   $("#accordion").empty();
 
   var boards = thisEvent.boards;
@@ -397,7 +320,7 @@ function createScoringAccordion(ns_pairs, ew_pairs) {
             "</div>" +
             "<div class='col-sm-1'><span>Explain</span></div>" +
           "</div>" +
-          createScoringForms(boards[board_num - 1], ns_pairs, ew_pairs) +
+          createScoringForms(boards[board_num - 1]) +
         "</div>" +
       "</div>");
   }
@@ -405,10 +328,17 @@ function createScoringAccordion(ns_pairs, ew_pairs) {
   $("#collapse1").addClass("in")
 }
 
-function createScoringForms(board, ns_pairs, ew_pairs) {
-  var ew_pair_numbers = [];
-  for (var i = 1; i <= ew_pairs.length; i++) {
-    ew_pair_numbers.push(i);
+function createScoringForms(board) {
+  var potential_pair_numbers = [];
+
+  if (thisEvent.eventType == EventType.MITCHELL) {
+    for (var i = 1; i <= Object.keys(thisEvent.ew_pairs).length; i++) {
+      potential_pair_numbers.push(i);
+    }
+  } else {
+    for (var i = 1; i <= Object.keys(thisEvent.pairs).length; i++) {
+      potential_pair_numbers.push(i);
+    }
   }
 
   var hands = board.hands;
@@ -417,11 +347,14 @@ function createScoringForms(board, ns_pairs, ew_pairs) {
   for (var i = 0; i < hands.length; i++) {
     var board_hand_id = board.number + '-' + i;
     var colored_row = (i % 2 == 0) ? " colored-row " : "";
+    var nsColumn = (hands[i].ns_pair)
+      ? "<input class='text-only' type='text' id='" + board_hand_id + "-ns' value='" + hands[i].ns_pair.number + "' disabled>"
+      : createDropdown(board_hand_id, "-ns", "N/S", potential_pair_numbers);
 
     content += "<div class='row" + colored_row + "'>" +
                   "<form id='" + board_hand_id + "-form' action='javascript:void(0);'>" +
-                    "<div class='col-sm-1'><input class='text-only' type='text' id='" + board_hand_id + "-ns' value='" + hands[i].ns_pair.number + "' disabled></div>" +
-                    "<div class='col-sm-1'>" + createDropdown(board_hand_id, "-ew", "E/W", ew_pair_numbers) + "</div>" +
+                    "<div class='col-sm-1'>" + nsColumn + "</div>" +
+                    "<div class='col-sm-1'>" + createDropdown(board_hand_id, "-ew", "E/W", potential_pair_numbers) + "</div>" +
                     "<div class='col-sm-2'><input type='text' pattern='^[1-7]([Ss]|[Dd]|[Cc]|[Hh]|([Nn]([Tt])?))([Xx*])?([Xx*])?$' class='form-control uppercase' id='" + board_hand_id + "-contract'  oninput='isRowComplete(\"" + board_hand_id + "\")' required></div>" +
                     "<div class='col-sm-2'>" + createDropdown(board_hand_id, "-by", "By", ["North", "South", "East", "West"]) + "</div>" +
                     "<div class='col-sm-2'>" + createDropdown(board_hand_id, "-tricks", "Tricks", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]) + "</div>" +
