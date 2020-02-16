@@ -168,8 +168,7 @@ function fillCompletedRows(retrievedEvent) {
       var board_hand_id = board.number + "-" + j;
       if (hand.ew_pair == "N/A") {
         if (retrievedEvent.eventType == EventType.HOWELL) {
-          // TODO verify ns_pair exists
-          $("#" + board_hand_id + "-ns").val(hand.ns_pair.number);
+          $("#" + board_hand_id + "-ns").val(hand.ns_pair.number ? hand.ns_pair.number : hand.ns_pair);
         }
         $("#" + board_hand_id + "-ew").val(hand.ew_pair);
       } else {
