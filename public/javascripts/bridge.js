@@ -69,9 +69,13 @@ $(function() {
     $('#print-scores-button').click(printScores);
 
     var retrievedEvent = JSON.parse(localStorage.getItem('bridgeEvent'));
-
     if (typeof retrievedEvent !== 'undefined' && retrievedEvent != null) {
-      createPartialEvent(retrievedEvent);
+      if (retrievedEvent.eventType) {
+        createPartialEvent(retrievedEvent);
+      } else {
+        localStorage.removeItem('bridgeEvent');
+        $("#masthead").hide();
+      }
     } else {
       $("#masthead").hide();
   }
@@ -159,7 +163,6 @@ function createPartialEvent(retrievedEvent) {
 }
 
 function fillCompletedRows(retrievedEvent) {
-  console.log("fillCompletedRows");
   for (var i = 0; i < retrievedEvent.boards.length; i++) {
     var board = retrievedEvent.boards[i];
     for (var j = 0; j < board.hands.length; j++) {
@@ -631,7 +634,6 @@ function isFirstBoardAtTable(board_id) {
 }
 
 function copyPairsToRemainingBoardsAtTable(first_board_id) {
-  console.log("copyPairsToRemainingBoardsAtTable")
   var first_board_number = first_board_id + 1;
   var boards_per_table = parseInt(thisEvent.boardsPerTable);
   var number_pairs_per_board = (thisEvent.eventType == EventType.MITCHELL)
