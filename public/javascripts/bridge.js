@@ -675,7 +675,9 @@ function calculateScoreForBoardHand(full_board_hand_id, board_id, hand_id, board
   var contract = $("#" + full_board_hand_id + "-contract").val().toUpperCase();
 
   if (ew_number === 'N/A') {
-    thisEvent.boards[board_id].hands[hand_id].ns_pair = thisEvent.pairs[ns_number];
+    if (thisEvent.eventType == EventType.HOWELL) {
+      thisEvent.boards[board_id].hands[hand_id].ns_pair = thisEvent.pairs[ns_number];
+    }
     thisEvent.boards[board_id].hands[hand_id].ew_pair = "N/A";
     thisEvent.boards[board_id].hands[hand_id].contract = "";
     thisEvent.boards[board_id].hands[hand_id].by = "";
