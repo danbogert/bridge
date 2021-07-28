@@ -526,7 +526,7 @@ function isRowComplete(board_hand_id) {
   var eastWestPairExists = $("#" + board_hand_id + "-ew").val() != null;
   var boardHandPassed = $("#" + board_hand_id + "-contract").val().toUpperCase().startsWith("PASS");
 
-  if (noEastWestPair) {
+  if (noEastWestPair && northSouthPairExists) {
     // TODO Clear and disable the rest of the row.  Scoring is allowed for the board!
     $("#" + board_hand_id + "-contract").val('');
     $("#" + board_hand_id + "-by").val('');
@@ -557,7 +557,7 @@ function isRowComplete(board_hand_id) {
     delete thisEvent.boards[board_id-1].hands[hand_id].ew_pair;
   }
 
-  if (noEastWestPair || (boardHandPassed && northSouthPairExists && eastWestPairExists) || (isValid(board_hand_id + "-ns") && isValid(board_hand_id + "-ew") && isValid(board_hand_id + "-contract") && isValid(board_hand_id + "-by") && isValid(board_hand_id + "-tricks"))) {
+  if ((noEastWestPair && northSouthPairExists) || (boardHandPassed && northSouthPairExists && eastWestPairExists) || (isValid(board_hand_id + "-ns") && isValid(board_hand_id + "-ew") && isValid(board_hand_id + "-contract") && isValid(board_hand_id + "-by") && isValid(board_hand_id + "-tricks"))) {
     calculateScore(board_hand_id);
     localStorage.setItem('bridgeEvent', JSON.stringify(thisEvent));
   }
