@@ -155,7 +155,8 @@ function createHowellMatchPointTable() {
 
     var names = thisEvent.pairs[pair].pair;
     var best_possible_score = single_hand_high_score * number_of_hands_played;
-    matchpoint_table += "<td class='black-border-sides'>" + total_matchpoints + "</td><td class='black-border-right'>" + ((total_matchpoints / best_possible_score) * 100).toFixed(2) + "%</td><td>" + names + "</td></tr>";
+    var score = best_possible_score == 0 ? ((total_matchpoints / best_possible_score) * 100).toFixed(2);
+    matchpoint_table += "<td class='black-border-sides'>" + total_matchpoints + "</td><td class='black-border-right'>" + score + "%</td><td>" + names + "</td></tr>";
   }
 
   return matchpoint_table += "</table>";
@@ -192,7 +193,7 @@ function createHowellRankingTable() {
     }
 
     var best_possible_score = single_hand_high_score * number_of_hands_played;
-    final_scores[pair] = (total_matchpoints / best_possible_score) * 100;
+    final_scores[pair] = best_possible_score == 0 ? 0 : (total_matchpoints / best_possible_score) * 100;
   }
 
   var final_scores_sorted = sortByValue(final_scores);
