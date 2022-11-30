@@ -155,7 +155,7 @@ function createHowellMatchPointTable() {
 
     var names = thisEvent.pairs[pair].pair;
     var best_possible_score = single_hand_high_score * number_of_hands_played;
-    var score = best_possible_score == 0 ? ((total_matchpoints / best_possible_score) * 100).toFixed(2);
+    var score = best_possible_score == 0 ? 0 : ((total_matchpoints / best_possible_score) * 100).toFixed(2);
     matchpoint_table += "<td class='black-border-sides'>" + total_matchpoints + "</td><td class='black-border-right'>" + score + "%</td><td>" + names + "</td></tr>";
   }
 
